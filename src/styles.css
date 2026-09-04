@@ -25,6 +25,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
+  --font-typewriter: "Special Elite", "Courier New", monospace;
+  --font-noir: "Playfair Display", Georgia, serif;
   --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -140,5 +142,144 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+}
+
+/*
+ * Noir mystery design system
+ * Palette: smoke-black, aged parchment, dried-blood red, brass.
+ */
+:root {
+  --noir-bg: oklch(0.14 0.012 60);
+  --noir-bg-raised: oklch(0.19 0.015 60);
+  --noir-ink: oklch(0.86 0.035 95);
+  --noir-ink-dim: oklch(0.62 0.03 90);
+  --noir-blood: oklch(0.52 0.16 25);
+  --noir-blood-bright: oklch(0.62 0.2 25);
+  --noir-brass: oklch(0.68 0.09 85);
+}
+
+@theme inline {
+  --color-noir-bg: var(--noir-bg);
+  --color-noir-bg-raised: var(--noir-bg-raised);
+  --color-noir-ink: var(--noir-ink);
+  --color-noir-ink-dim: var(--noir-ink-dim);
+  --color-noir-blood: var(--noir-blood);
+  --color-noir-blood-bright: var(--noir-blood-bright);
+  --color-noir-brass: var(--noir-brass);
+}
+
+/* Vignette shadow creeping in from the edges of the screen */
+@utility vignette {
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 45%,
+      color-mix(in oklab, var(--noir-bg) 55%, transparent) 78%,
+      var(--noir-bg) 100%
+    );
+  }
+}
+
+/* Animated film-grain overlay */
+@utility grain {
+  &::before {
+    content: "";
+    position: fixed;
+    inset: -100%;
+    pointer-events: none;
+    z-index: 41;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain-shift 0.9s steps(4) infinite;
+  }
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 3%); }
+  50% { transform: translate(3%, -2%); }
+  75% { transform: translate(-3%, -3%); }
+  100% { transform: translate(2%, 2%); }
+}
+
+/* Slow drifting smoke at the bottom of the scene */
+@utility smoke {
+  &::before {
+    content: "";
+    position: fixed;
+    left: -20%;
+    right: -20%;
+    bottom: -30%;
+    height: 70%;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(
+      ellipse 60% 50% at 50% 100%,
+      color-mix(in oklab, var(--noir-ink-dim) 14%, transparent),
+      transparent 70%
+    );
+    filter: blur(30px);
+    animation: smoke-drift 14s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes smoke-drift {
+  from { transform: translateX(-6%) scale(1); opacity: 0.7; }
+  to { transform: translateX(6%) scale(1.12); opacity: 1; }
+}
+
+/* Flickering lamp-light on the whole scene */
+@keyframes lamp-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.86; }
+  94% { opacity: 0.97; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+/* Full-screen blood-red flash for a fatal choice */
+@keyframes red-flash {
+  0% { opacity: 0; }
+  12% { opacity: 0.85; }
+  30% { opacity: 0.25; }
+  45% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+@utility animate-red-flash {
+  animation: red-flash 1.4s ease-out forwards;
+}
+
+/* Subtle tremble for dread-heavy headings */
+@keyframes tremble {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-0.5px, 0.5px); }
+  40% { transform: translate(0.5px, -0.5px); }
+  60% { transform: translate(-0.5px, -0.5px); }
+  80% { transform: translate(0.5px, 0.5px); }
+}
+
+@utility animate-tremble {
+  animation: tremble 0.35s linear infinite;
+}
+
+/* Blinking typewriter caret */
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@utility caret {
+  &::after {
+    content: "▌";
+    color: var(--noir-blood-bright);
+    animation: caret-blink 1s steps(1) infinite;
   }
 }
