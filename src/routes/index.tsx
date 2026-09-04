@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import imgTrench from "@/assets/scene-trench.jpg";
+import imgBanquet from "@/assets/scene-banquet.jpg";
+import imgGallery from "@/assets/scene-gallery.jpg";
+import imgInterrogation from "@/assets/scene-interrogation.jpg";
+import imgVilla from "@/assets/scene-villa.jpg";
+import imgWell from "@/assets/scene-well.jpg";
+import imgConfession from "@/assets/scene-confession.jpg";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -239,6 +247,35 @@ const SCENES: Record<string, Scene> = {
 };
 
 const START_SCENE = "prologue";
+
+/* Chapter illustration shown above each scene (fatal branches inherit
+   the illustration of the moment they went wrong). */
+const SCENE_IMAGES: Record<string, { src: string; alt: string }> = {
+  prologue: { src: imgTrench, alt: "A soldier shields another in a WWI trench as bombs fall" },
+  ch1_arrive: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  dead_alibi: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  ch1_banquet: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  ch1_hall: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  ch1_gallery: { src: imgGallery, alt: "Guests gaze at a portrait in a dark gallery" },
+  dead_leo: { src: imgGallery, alt: "Guests gaze at a portrait in a dark gallery" },
+  ch2_knock: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  dead_grief: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch2_interrogate: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  dead_story: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch2_gunshots: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch3_villa: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  dead_suicide: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  ch3_photo: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  ch3_gun: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  dead_silence: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  ch4_forensic: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  dead_butler: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch4_webley: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
+  ch5_search: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
+  dead_gaze: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch6_well: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
+  ch7_truth: { src: imgConfession, alt: "A detective whispers to a man beneath a streetlamp, a noose in the dark" },
+};
 
 /* ------------------------------------------------------------------ */
 /* Typewriter hook                                                     */
