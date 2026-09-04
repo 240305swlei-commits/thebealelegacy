@@ -311,6 +311,7 @@ function Index() {
   const [sceneId, setSceneId] = useState(START_SCENE);
   const [flashKey, setFlashKey] = useState(0);
   const scene = SCENES[sceneId]!;
+  const image = SCENE_IMAGES[sceneId];
   const { shown, done, skip } = useTypewriter(scene.text);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -351,6 +352,18 @@ function Index() {
 
         {/* scene card */}
         <div key={sceneId} className="animate-fade-in flex flex-1 flex-col">
+          {image && (
+            <figure className="mb-8 border border-noir-brass/25 p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]">
+              <img
+                src={image.src}
+                alt={image.alt}
+                width={1280}
+                height={720}
+                loading="lazy"
+                className="w-full object-cover opacity-90 sepia-[0.25]"
+              />
+            </figure>
+          )}
           {scene.chapter && (
             <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-noir-blood-bright">
               {scene.chapter}
