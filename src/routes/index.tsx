@@ -273,7 +273,7 @@ function useTypewriter(text: string) {
 function Index() {
   const [sceneId, setSceneId] = useState(START_SCENE);
   const [flashKey, setFlashKey] = useState(0);
-  const scene = SCENES[sceneId];
+  const scene = SCENES[sceneId]!;
   const { shown, done, skip } = useTypewriter(scene.text);
   const scrollRef = useRef<HTMLDivElement>(null);
 
