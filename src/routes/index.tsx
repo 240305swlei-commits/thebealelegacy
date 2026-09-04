@@ -127,7 +127,7 @@ const SCENES: Record<string, Scene> = {
   ch2_interrogate: {
     chapter: "Chapter Two — The Knock",
     title: "The Interrogation",
-    text: "At the station, you detail your entire timeline: delayed fifteen minutes by traffic; a business disagreement with your father; the banquet; accidentally bumping the butler while dancing; the gallery; an upset stomach and the restroom; a near-fight with your partner Mr. Joseph; Miss Mary disheveled, her husband in high spirits; the cup of tea; then home.\n\nThe senior officer stares intently at you. \"You're lying. You were obviously drunk — how can you remember all these details so clearly?\"",
+    text: "At the station, you detail your entire timeline: delayed fifteen minutes by traffic; an upstairs 'business discussion' with your father — he was furious about rumors that you were selling weapons on the black market to his enemies; the banquet; accidentally bumping the butler while dancing; the gallery; an upset stomach and the restroom; a near-fight with your partner Mr. Joseph; Miss Mary disheveled, her husband in high spirits; the cup of tea; then home.\n\nThe senior officer stares intently at you. \"You're lying. You were obviously drunk — how can you remember all these details so clearly?\"",
     choices: [
       { label: "Panic and start revising your story", next: "dead_story" },
       { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_gunshots" },
@@ -144,7 +144,7 @@ const SCENES: Record<string, Scene> = {
   ch2_gunshots: {
     chapter: "Chapter Two — The Knock",
     title: "The Letters",
-    text: "The officer studies you, then asks: \"Did you hear any gunshots?\"\n\n\"I did. But anyone who knows my adoptive father knows he enjoys target shooting — he kept a target in his room. Hearing gunshots there isn't unusual.\" The young officer nods; your statement checks out.\n\nJust then, another officer enters and hands over several envelopes. Written on them: 'I know who you are. You will not survive this month.'",
+    text: "The officer studies you, then asks: \"Did you hear any gunshots?\"\n\n\"I did. But anyone who knows my adoptive father knows he enjoys target shooting — he kept a target in his room. Hearing gunshots there isn't unusual.\" The young officer nods; your statement checks out.\n\nJust then, another officer enters and hands over several envelopes. Written on them: 'I know your real name, and I know how you profit from this war. Stop stealing his business, or you will not survive this month.'",
     choices: [{ label: "Accompany the police to the villa", next: "ch3_villa" }],
   },
 
@@ -240,7 +240,7 @@ const SCENES: Record<string, Scene> = {
   ch7_truth: {
     chapter: "Chapter Seven — The Right Person",
     title: "The Perfect Crime",
-    text: "Yes. The police really had found the right person.\n\nYou arrived late so the butler would remember you. You stole Jack's revolver and sleeping pills while he talked business. You knew the threatening letter was addressed to you — written by your dear sister, who knew you were undercutting your adoptive father's arms trade. The tea you served was spiked; this time, Emma would not wake up.\n\nYou swapped Leo's identical Webley into her hands, knowing he would assume he killed her in a drunken stupor and stage her suicide. You provoked a fight with Mr. Joseph to forge your alibi. Then you went upstairs to 'discuss business' — and shot Jack while the guests danced below. The family photograph was your final touch: a guilt-stricken suicide.\n\nOf course, a man like Jack would never end his life over something so trivial.\n\nDickens died so Jack could live. Jack died so you could inherit. And Emma — Emma wrote to the wrong brother.\n\nThe case is closed. The detective solved it.",
+    text: "Yes. The police really had found the right person.\n\nYou arrived late so the butler would remember you. You stole Jack's revolver and sleeping pills while he talked business with the other arms dealers. During that 'business discussion,' Jack had finally confronted you — disgusted by his discovery that you were secretly selling weapons to the enemy on the black market. He threatened to cut you off, claiming your greed was destroying his empire.\n\nAnd you knew the threatening letter was addressed to you — written by your dear sister. She had uncovered your real identity and your ruthless tactics, and was blackmailing you to protect Jack's territory. But selling weapons during the war had made you a fortune — and you weren't going to let Jack's sudden burst of morality, or your sister's threats, take that away.\n\nThe tea you served was spiked; this time, Emma would not wake up. You swapped Leo's identical Webley into her hands, knowing he would assume he killed her in a drunken stupor and stage her suicide. You provoked a fight with Mr. Joseph to forge your alibi. Then you went upstairs to 'discuss business' — and shot Jack while the guests danced below. The family photograph was your final touch: a guilt-stricken suicide.\n\nOf course, a man like Jack would never end his life over something so trivial.\n\nDickens died so Jack could live. Jack died so you could keep your empire. And Emma — Emma tried to blackmail the wrong brother.\n\nThe case is closed. The detective solved it.",
     choices: [],
     ending: true,
   },
