@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import imgTrench from "@/assets/scene-trench.jpg";
