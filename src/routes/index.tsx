@@ -76,12 +76,12 @@ const ENDING_GATE = "__ending__";
 
 const SCENES: Record<string, Scene> = {
   prologue: {
-    chapter: "Background — The Somme, 1916",
+    chapter: "Background — The Somme, July 1916",
     title: "The Promise",
-    text: "Smoke and gunpowder fill the battlefield. The sky is torn by the roar of fighter planes, and thunderous booms shake the earth. Two young soldiers crawl through the trenches as bombs fall, one after another, the rain of explosives sweeping toward them.\n\nSuddenly one soldier throws himself over the other, shielding him with his own body. The bomb does not score a direct hit — but the soldier on top is mortally wounded.",
+    text: "July 1916, the Battle of the Somme. Smoke and the heavy stench of gunpowder fill the battlefield air. The sky is cut by the roar of German bombers, and thunderous artillery shakes the muddy earth. Corpses lie scattered on the ground; countless lives vanish in an instant, leaving only coldness and loneliness.\n\nTwo young British soldiers crawl through the trenches as enemy planes drop bombs one after another. Suddenly one throws himself over the other, shielding him with his own body. It is not a direct hit — but the soldier on top is mortally wounded.",
     dialogue: {
       speaker: "Dickens",
-      line: "Jack… stay alive. Go to the Baker Street Orphanage, and please — take good care of my children. Emma and William.",
+      line: "Jack… stay alive. Go to the Baker Street Orphanage. Please — take good care of my children, Emma and William.",
     },
     choices: [{ label: "Twenty-seven years pass…", next: "ch1_arrive" }],
   },
@@ -89,7 +89,7 @@ const SCENES: Record<string, Scene> = {
   ch1_arrive: {
     chapter: "Chapter One — The Banquet",
     title: "The Invitation",
-    text: "July 11, 1943. Guests in gorgeous evening gowns walk a marble corridor toward the manor's banquet hall. Candlelight flickers across silverware, fine porcelain and crystal.\n\nYou are William Vernon Beale — adopted son of the host, a detective of some reputation, and, in the hours the world does not see, an arms dealer undercutting his own father's contracts. Your car was delayed. The banquet began at nine; it is now a quarter past, and every eye in the hall turns as you enter. Exactly as you intended.",
+    text: "July 11, 1943, a grand London manor. Guests in evening gowns and sparkling jewelry walk a marble corridor toward the banquet hall, warm light on the polished floor. The host is your adoptive father, Jack Vernon Beale — now a senior official in the Ministry of Production. Nominally a victory celebration; covertly, a night to secure lucrative kickbacks from American suppliers under the Lend-Lease Act.\n\nYou are William Vernon Beale — a detective of some reputation, and, in the hours the world does not see, an arms dealer smuggling wartime munitions and undercutting his own father's business. Your car was delayed. The banquet began at nine; it is now a quarter past, and every eye in the hall turns as you enter. Exactly as you intended.",
     dialogue: {
       speaker: "The Butler",
       line: "Young master, why did you bring an invitation? Come — let me store your coat.",
@@ -113,7 +113,7 @@ const SCENES: Record<string, Scene> = {
   ch1_banquet: {
     chapter: "Chapter One — The Banquet",
     title: "Champagne and Candlelight",
-    text: "Dish after dish arrives — Italian pasta, French foie gras, German sausages. Dancers, musicians and a mysterious magician hold the guests entranced. Upstairs, behind a closed door, Jack argues with three men about contracts, quotas, and a son who has been selling to the wrong buyers.\n\nAs the night deepens, the butler steps onto the landing.",
+    text: "Dish after dish arrives — Italian pasta, French foie gras, German sausages — each a work of art. Dancers, musicians and a mysterious magician hold the guests entranced, as if they were in a dream. Upstairs, behind a closed door, Jack argues with arms men about contracts, quotas, and a son who has been stealing his business.\n\nAs the night deepens, the banquet reaches its climax and the elderly butler steps onto the landing.",
     dialogue: {
       speaker: "The Butler",
       line: "The master is temporarily occupied, but the true essence of the banquet is about to be revealed. Please follow me to the gallery.",
@@ -182,7 +182,7 @@ const SCENES: Record<string, Scene> = {
   ch2_interrogate: {
     chapter: "Chapter Two — The Knock",
     title: "The Interrogation",
-    text: "At the station you recite your timeline: fifteen minutes late from traffic; an upstairs argument with your father about the black-market rumours; the banquet; bumping the butler while dancing; the gallery; an upset stomach; the washroom corridor and Mr. Joseph; Miss Mary disheveled and her husband strangely elated; the cup of tea; then home.\n\nThe senior officer lets the silence stretch before he speaks.",
+    text: "At the station you truthfully recite your timeline: fifteen minutes late from an accident on the road; an upstairs disagreement with your father over business; the banquet; bumping the butler while dancing; the gallery; an upset stomach; the washroom corridor and Mr. Joseph; Miss Mary disheveled and her husband strangely elated; the cup of tea; then home.\n\nThe young officer nods to the senior one — your story checks out. But the senior officer lets the silence stretch before he speaks.",
     dialogue: {
       speaker: "Senior Detective",
       line: "You're lying. You were obviously drunk — how do you remember all of this so clearly?",
@@ -203,10 +203,10 @@ const SCENES: Record<string, Scene> = {
   ch2_letters: {
     chapter: "Chapter Two — The Knock",
     title: "The Threatening Letters",
-    text: "\"Did you hear any gunshots?\"\n\n\"I did. But anyone who knew my father knew he kept a target in his room. Gunshots in that house are furniture.\"\n\nThe young officer nods; your statement checks out. Then another officer enters and lays several envelopes on the table.",
+    text: "\"Did you hear any gunshots?\"\n\n\"I did. But everyone knows my adoptive father has a hobby of target shooting. He made a target in his room and practices when he's free. Gunshots in that house are furniture.\"\n\nThe young officer nods; your statement checks out. Then another officer enters, holding several envelopes found in the estate's mail.",
     dialogue: {
       speaker: "The Letters",
-      line: "I know your real name, and I know how you profit from this war. You will not survive this month.",
+      line: "I know who you are. You will not survive this month.",
     },
     onEnter: {
       items: [{ name: "Threatening Letters", detail: "Elegant hand. Addressed to you — though the police do not know that." }],
@@ -269,7 +269,7 @@ const SCENES: Record<string, Scene> = {
   ch4_forensic: {
     chapter: "Chapter Four — The Theory",
     title: "Pollen and Pills",
-    text: "\"When I touched my sister, I caught a faint scent of pollen.\" A forensic examiner is brought in; the report confirms she was drugged before her death.\n\nYou assemble the theory the police need: Leo offered his wife to Jack as a gift. Jack violated her. She dropped the family photograph, Jack's composure shattered, and he shot himself in guilt. Mary woke, confronted Leo, and Leo beat her, then staged her suicide.\n\nUpstairs the officers find a Webley revolver missing two rounds.",
+    text: "\"When I touched my sister, I caught a faint scent of pollen.\" A forensic examiner is brought in; the report confirms she was drugged before her death.\n\nYou assemble the theory the police need: Mary was given to Mr. Jack as a gift by her husband, Mr. Leo — an investigator for the War Economy Board — in exchange for lucrative military contracts. Jack violated her. She accidentally dropped the family photograph, Jack's inner defenses shattered, and knowing he had betrayed your father, he shot himself in despair. Mary woke full of resentment, confronted Leo, and Leo beat her, then feigned apology, lured her into a room, murdered her, and faked her suicide.\n\nUpstairs the officers find a standard-issue Webley revolver missing two rounds.",
     dialogue: {
       speaker: "William Beale",
       line: "A Webley is a staple among military men. Both my father and Leo are in the trade — both would own one.",
@@ -314,7 +314,7 @@ const SCENES: Record<string, Scene> = {
   ch7_truth: {
     chapter: "Chapter Seven — The Right Person",
     title: "The Perfect Crime",
-    text: "Yes. The police really had found the right person.\n\nYou arrived late so the butler would remember you. You stole Jack's revolver and his sleeping pills while he talked contracts. He had confronted you that night — disgusted that his son was selling to the enemy, threatening to cut you out entirely.\n\nYou knew the threatening letters were meant for you, written in your sister's hand. You spiked her tea, killed her with Jack's Webley, and pressed Leo's identical gun into her fingers so a drunk fool would stage a suicide for you. Then you built your alibi, went upstairs to 'discuss business,' and shot Jack while the guests danced below. The photograph was your final brushstroke.\n\nOf course, a man like Jack would never end his life over something so trivial.",
+    text: "Yes. The police really had found the right person.\n\nYou arrived a few minutes late so the housekeeper would remember your arrival time. You took advantage of Jack's discussion with other arms dealers to slip into his room and steal his pistol and sleeping pills.\n\nYou knew Jack would do something bad to Mary, and you knew the threatening letter was actually written to you — by your dear sister. She knew you were an arms dealer too, secretly smuggling wartime munitions and stealing your adoptive father's business. Selling guns on the black market during the war had made you a fortune.\n\nAfter the painting, you found your sister. She panicked, thinking you had discovered her identity — then relaxed over the tea. Five minutes later, when the arguing died down, you sneaked in. The drug in the tea was brilliant; they never imagined Emma would be knocked unconscious a second time. You killed her with the stolen pistol, and seeing that fool Leo carried the same type of Webley, you swapped his gun into her hands — your paranoid sister's own Adams revolver let Leo believe he might have killed her drunk and stage her suicide. Then the bathroom conflict with Joseph for your alibi, upstairs to 'discuss' with Jack, one shot while the guests danced below, and the photograph to fake his guilty suicide.\n\nOf course, Jack would never commit suicide over such a \"small matter.\"",
     resolveEnding: true,
     choices: [{ label: "See how your night truly ends", next: ENDING_GATE }],
   },
