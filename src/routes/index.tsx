@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import imgTrench from "@/assets/scene-trench.jpg";
 import imgBanquet from "@/assets/scene-banquet.jpg";
@@ -12,17 +13,17 @@ import imgConfession from "@/assets/scene-confession.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "The Beale Inheritance — An Interactive Noir Mystery" },
+      { title: "The Somme Echoes — A 1940s Noir Mystery Game" },
       {
         name: "description",
         content:
-          "1943. A banquet at the manor, a famous painting, two bodies by morning. Play the detective in a branching noir mystery where every choice can close the case — or close around your neck.",
+          "London, 1943. A banquet, two bodies, and a detective who already knows the killer. Rewind time with the pocket watch and change your past choices to unlock three very different endings.",
       },
-      { property: "og:title", content: "The Beale Inheritance — An Interactive Noir Mystery" },
+      { property: "og:title", content: "The Somme Echoes — A 1940s Noir Mystery Game" },
       {
         property: "og:description",
         content:
-          "1943. A banquet at the manor, two bodies by morning. A branching noir mystery where every choice can close the case — or close around your neck.",
+          "A branching noir detective game. Collect evidence, forge your alibi, rewind time — and decide how William Beale's story ends.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,43 +33,79 @@ export const Route = createFileRoute("/")({
 });
 
 /* ------------------------------------------------------------------ */
-/* Story graph                                                         */
+/* State                                                               */
 /* ------------------------------------------------------------------ */
 
-type Choice = { label: string; next: string };
+type Flags = {
+  found_hidden_letter: boolean;
+  failed_alibi_check: boolean;
+};
+
+const INITIAL_FLAGS: Flags = {
+  found_hidden_letter: false,
+  failed_alibi_check: false,
+};
+
+type Item = { name: string; detail: string };
+
+type Effect = {
+  flags?: Partial<Flags>;
+  items?: Item[];
+};
+
+type Choice = { label: string; next: string; effect?: Effect; note?: string };
 
 type Scene = {
   chapter?: string;
   title?: string;
   text: string;
+  dialogue?: { speaker: string; line: string };
   choices: Choice[];
-  /** Fatal branch: red flash + case-collapsed screen */
+  onEnter?: Effect;
   fatal?: boolean;
-  /** Final scene of the story */
   ending?: boolean;
+  /** resolve the next scene from the flags instead of a fixed id */
+  resolveEnding?: boolean;
 };
+
+const ENDING_GATE = "__ending__";
+
+/* ------------------------------------------------------------------ */
+/* Story graph                                                         */
+/* ------------------------------------------------------------------ */
 
 const SCENES: Record<string, Scene> = {
   prologue: {
-    chapter: "Prologue — 1916",
+    chapter: "Background — The Somme, 1916",
     title: "The Promise",
-    text: "Smoke and gunpowder fill the battlefield. The sky is torn by the roar of fighter planes. Two young soldiers crawl through the trenches as bombs fall one after another, the rain of explosives sweeping toward them.\n\nSuddenly, one soldier throws himself over the other, shielding him from the blast with his own body. The bomb does not score a direct hit — but the soldier on top is mortally wounded.\n\nBefore dying, he whispers: \"Jack... stay alive. Go to the Baker Street Orphanage, and please... take good care of my children. Emma and William.\"\n\nWith tear-blurred eyes, Jack replies, \"Dickens, you're not going to die! Hold on!\"",
+    text: "Smoke and gunpowder fill the battlefield. The sky is torn by the roar of fighter planes, and thunderous booms shake the earth. Two young soldiers crawl through the trenches as bombs fall, one after another, the rain of explosives sweeping toward them.\n\nSuddenly one soldier throws himself over the other, shielding him with his own body. The bomb does not score a direct hit — but the soldier on top is mortally wounded.",
+    dialogue: {
+      speaker: "Dickens",
+      line: "Jack… stay alive. Go to the Baker Street Orphanage, and please — take good care of my children. Emma and William.",
+    },
     choices: [{ label: "Twenty-seven years pass…", next: "ch1_arrive" }],
   },
 
   ch1_arrive: {
     chapter: "Chapter One — The Banquet",
     title: "The Invitation",
-    text: "July 11, 1943. Guests in gorgeous evening gowns and sparkling jewelry walk a grand marble corridor toward the manor's banquet hall. Candlelight flickers across silverware, fine porcelain, and crystal glasses.\n\nYou are William Vernon Beale — adopted son of the host, and a detective of some reputation. Your car was delayed in traffic. The banquet began at nine; it is now a quarter past.\n\nAt the door, the elderly butler greets you.",
+    text: "July 11, 1943. Guests in gorgeous evening gowns walk a marble corridor toward the manor's banquet hall. Candlelight flickers across silverware, fine porcelain and crystal.\n\nYou are William Vernon Beale — adopted son of the host, a detective of some reputation, and, in the hours the world does not see, an arms dealer undercutting his own father's contracts. Your car was delayed. The banquet began at nine; it is now a quarter past, and every eye in the hall turns as you enter. Exactly as you intended.",
+    dialogue: {
+      speaker: "The Butler",
+      line: "Young master, why did you bring an invitation? Come — let me store your coat.",
+    },
+    onEnter: {
+      items: [{ name: "Engraved Invitation", detail: "Signed by Jack Vernon Beale, 11 July 1943." }],
+    },
     choices: [
-      { label: "Present your invitation to the butler", next: "ch1_banquet" },
+      { label: "Let the butler note your arrival, loudly", next: "ch1_banquet" },
       { label: "Slip in quietly, unnoticed", next: "dead_alibi" },
     ],
   },
 
   dead_alibi: {
     title: "A Quiet Entrance",
-    text: "You slip past the cloakroom without a word. No one marks your arrival.\n\nThe next morning, when the police reconstruct the night, nobody can say when you arrived — or where you were when the shots were fired. To them, an unmarked guest is not a guest at all.\n\nHe is a suspect.",
+    text: "You slip past the cloakroom without a word. No one marks your arrival.\n\nThe next morning, when the police reconstruct the night, nobody can say when you came in — or where you stood when the shots were fired. To them, an unmarked guest is not a guest at all.\n\nHe is a suspect.",
     fatal: true,
     choices: [],
   },
@@ -76,50 +113,68 @@ const SCENES: Record<string, Scene> = {
   ch1_banquet: {
     chapter: "Chapter One — The Banquet",
     title: "Champagne and Candlelight",
-    text: "The butler looks at you respectfully. \"Young master, why did you bring an invitation? Come, let me store your coat.\"\n\nDish after dish arrives — Italian pasta, French foie gras, German sausages — each a work of art. Dancers, musicians, and a mysterious magician hold the guests entranced.\n\nAs the night deepens, the butler announces: \"The master is temporarily occupied, but the true essence of the banquet is about to be revealed. Please follow me to the gallery.\"",
-    choices: [
-      { label: "Follow the guests to the gallery", next: "ch1_gallery" },
-      { label: "Stay behind in the emptying hall", next: "ch1_hall" },
-    ],
-  },
-
-  ch1_hall: {
-    chapter: "Chapter One — The Banquet",
-    title: "The Empty Hall",
-    text: "You linger among the abandoned glasses. From down the corridor come two sharp cracks — gunshots, muffled by music and laughter. No one else seems to notice. After all, the master of this house keeps a target in his room, and practices whenever he has a free hour.\n\nYou wait a moment, then follow the crowd toward the gallery.",
-    choices: [{ label: "Enter the gallery", next: "ch1_gallery" }],
+    text: "Dish after dish arrives — Italian pasta, French foie gras, German sausages. Dancers, musicians and a mysterious magician hold the guests entranced. Upstairs, behind a closed door, Jack argues with three men about contracts, quotas, and a son who has been selling to the wrong buyers.\n\nAs the night deepens, the butler steps onto the landing.",
+    dialogue: {
+      speaker: "The Butler",
+      line: "The master is temporarily occupied, but the true essence of the banquet is about to be revealed. Please follow me to the gallery.",
+    },
+    choices: [{ label: "Follow the guests to the gallery", next: "ch1_gallery" }],
   },
 
   ch1_gallery: {
     chapter: "Chapter One — The Banquet",
     title: "The Painting",
-    text: "The gallery houses a famous painting that has hung here for years. The guests murmur in admiration.\n\n\"I didn't expect to see her here again,\" you whisper to yourself.\n\nMore than half an hour passes unnoticed. On your way back from the bathroom, you spot a young lady alongside a man of similar age. The lady looks terrible — disheveled, tears on her face. The drunk man seems to be forcing her toward a room.\n\nYou step in to help. She politely turns you down.",
-    choices: [
-      { label: "Force the drunk man away from her", next: "dead_leo" },
-      { label: "Offer her a cup of strong tea to sober up", next: "ch2_knock" },
-    ],
+    text: "The gallery houses a famous painting that has hung here for years. The guests murmur in admiration.\n\n\"I didn't expect to see her here again,\" you whisper to no one.\n\nHalf an hour slips by. On your way back you see a young lady beside a man of the same age — she is disheveled, tear-streaked; he is drunk and steering her toward a closed door. You step in. She politely refuses your help. You offer strong tea instead, and she accepts it.\n\nFive minutes later the arguing inside the room dies down.",
+    onEnter: {
+      items: [{ name: "Cup of Strong Tea", detail: "Served warm. Spiked with Jack's sleeping pills." }],
+    },
+    choices: [{ label: "Slip into the room", next: "ch1_bathroom" }],
   },
 
-  dead_leo: {
-    title: "An Unforgettable Face",
-    text: "You seize the drunk man by the collar and hurl him against the wall. Guests stare. Miss Mary begs you to stop. The man — her husband, Mr. Leo — memorizes your face with drunken, burning hatred.\n\nWeeks later, awaiting the gallows for a murder he insists he staged but did not commit, Leo tells the police everything about the meddling young man by the corridor — including what he saw in your hands as you walked away.\n\nThe noose, in the end, is fitted for another neck.",
-    fatal: true,
-    choices: [],
+  ch1_bathroom: {
+    chapter: "Chapter One — The Banquet",
+    title: "The Alibi",
+    text: "It is done. Emma will not wake again, and Leo's identical Webley now rests in her hand while yours goes into your coat.\n\nNow you need the second half of the night: an alibi loud enough that two hundred guests will swear where you were. You walk into the washroom corridor, where your business partner Mr. Joseph is straightening his tie at the mirror.\n\nHow hard do you push him?",
+    dialogue: {
+      speaker: "Mr. Joseph",
+      line: "Beale. You look pale. Too much champagne, or too much conscience?",
+    },
+    choices: [
+      {
+        label: "Deliberately insult him and shove him hard — make a scene the whole floor hears",
+        next: "ch2_knock",
+        note: "Perfect alibi locked",
+        effect: {
+          flags: { failed_alibi_check: false },
+          items: [{ name: "Witnessed Quarrel", detail: "A dozen guests saw you nearly come to blows with Joseph." }],
+        },
+      },
+      {
+        label: "Step politely away with the slightest brush of his shoulder",
+        next: "ch2_knock",
+        note: "Weak alibi",
+        effect: { flags: { failed_alibi_check: true } },
+      },
+    ],
   },
 
   ch2_knock: {
     chapter: "Chapter Two — The Knock",
     title: "Two Officers",
-    text: "The drunk man barks at you to get out of the way. Luckily, Miss Mary accepts the tea. The evening winds down; you return to your apartment near the manor.\n\nMorning. Knock, knock. \"Is anyone home? Is Mr. William here?\"\n\nTwo young police officers stand at your door. A murder occurred last night. You reply excitedly: \"I am! You've come to the right person — I can solve any case.\"\n\n\"Sir, you misunderstand. The deceased is Mr. Jack Vernon Beale… your adoptive father.\"",
+    text: "You return to your apartment near the manor and sleep, as a man with nothing to hide would.\n\nMorning. Knock, knock.\n\nTwo officers stand at your door — one young and eager, one senior and quiet. There has been a murder.",
+    dialogue: {
+      speaker: "Young Officer",
+      line: "Sir, you misunderstand. The deceased is Mr. Jack Vernon Beale. Your adoptive father.",
+    },
     choices: [
-      { label: "Break down and refuse to answer questions", next: "dead_grief" },
       { label: "Stagger — then compose yourself and demand to assist", next: "ch2_interrogate" },
+      { label: "Break down and refuse to answer questions", next: "dead_grief" },
     ],
   },
 
   dead_grief: {
     title: "Too Much Grief",
-    text: "You collapse against the doorframe and wave the officers away. Your grief is theatrical — and the officers have seen theatrical grief before.\n\nAn heir who inherits an arms fortune, alone in his apartment, refusing to give a statement the morning after a murder. The senior officer files one line in his notebook: 'Bring him in.'\n\nSome performances convince no one.",
+    text: "You collapse against the doorframe and wave the officers away. Your grief is theatrical — and these officers have seen theatrical grief before.\n\nAn heir to an arms fortune, alone, refusing to give a statement the morning after a murder. The senior officer writes one line in his notebook: 'Bring him in.'",
     fatal: true,
     choices: [],
   },
@@ -127,64 +182,86 @@ const SCENES: Record<string, Scene> = {
   ch2_interrogate: {
     chapter: "Chapter Two — The Knock",
     title: "The Interrogation",
-    text: "At the station, you detail your entire timeline: delayed fifteen minutes by traffic; an upstairs 'business discussion' with your father — he was furious about rumors that you were selling weapons on the black market to his enemies; the banquet; accidentally bumping the butler while dancing; the gallery; an upset stomach and the restroom; a near-fight with your partner Mr. Joseph; Miss Mary disheveled, her husband in high spirits; the cup of tea; then home.\n\nThe senior officer stares intently at you. \"You're lying. You were obviously drunk — how can you remember all these details so clearly?\"",
+    text: "At the station you recite your timeline: fifteen minutes late from traffic; an upstairs argument with your father about the black-market rumours; the banquet; bumping the butler while dancing; the gallery; an upset stomach; the washroom corridor and Mr. Joseph; Miss Mary disheveled and her husband strangely elated; the cup of tea; then home.\n\nThe senior officer lets the silence stretch before he speaks.",
+    dialogue: {
+      speaker: "Senior Detective",
+      line: "You're lying. You were obviously drunk — how do you remember all of this so clearly?",
+    },
     choices: [
+      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_letters" },
       { label: "Panic and start revising your story", next: "dead_story" },
-      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_gunshots" },
     ],
   },
 
   dead_story: {
     title: "The Story Shifts",
-    text: "\"Well — perhaps it was half past, not a quarter. Or was I in the restroom before the gallery? No, after—\"\n\nEvery revision is a thread, and the senior officer pulls each one. By the second interrogation your timeline has more holes than the trench lines of '16.\n\nA detective with a perfect memory was plausible. A liar with a shifting one is a suspect with a motive.",
+    text: "\"Well — perhaps it was half past, not a quarter. Or was I in the restroom before the gallery? No, after—\"\n\nEvery revision is a thread, and the senior officer pulls each one. By the second interview your timeline has more holes than the trench lines of '16.",
     fatal: true,
     choices: [],
   },
 
-  ch2_gunshots: {
+  ch2_letters: {
     chapter: "Chapter Two — The Knock",
-    title: "The Letters",
-    text: "The officer studies you, then asks: \"Did you hear any gunshots?\"\n\n\"I did. But anyone who knows my adoptive father knows he enjoys target shooting — he kept a target in his room. Hearing gunshots there isn't unusual.\" The young officer nods; your statement checks out.\n\nJust then, another officer enters and hands over several envelopes. Written on them: 'I know your real name, and I know how you profit from this war. Stop stealing his business, or you will not survive this month.'",
+    title: "The Threatening Letters",
+    text: "\"Did you hear any gunshots?\"\n\n\"I did. But anyone who knew my father knew he kept a target in his room. Gunshots in that house are furniture.\"\n\nThe young officer nods; your statement checks out. Then another officer enters and lays several envelopes on the table.",
+    dialogue: {
+      speaker: "The Letters",
+      line: "I know your real name, and I know how you profit from this war. You will not survive this month.",
+    },
+    onEnter: {
+      items: [{ name: "Threatening Letters", detail: "Elegant hand. Addressed to you — though the police do not know that." }],
+    },
     choices: [{ label: "Accompany the police to the villa", next: "ch3_villa" }],
   },
 
   ch3_villa: {
     chapter: "Chapter Three — The Villa",
     title: "Two Bodies",
-    text: "With the leads drying up, the police search the villa. You offer to accompany them — it is, after all, your former home.\n\nIn the first-floor bedroom lies a woman's body. Her face bears obvious slap marks, her abdomen signs of a beating.\n\nOn the second floor lies your adoptive father, Jack Vernon Beale. Both victims have gunshot wounds to the temple, the skin around them slightly charred.\n\n\"Do you suspect they both committed suicide?\" you ask. \"It's a possibility,\" the officer replies. \"Though two suicides on the same night seems too much of a coincidence.\"",
+    text: "In the first-floor bedroom lies a woman's body — slap marks across her face, bruising at the abdomen. On the second floor lies Jack Vernon Beale. Both have gunshot wounds to the temple, the skin around them slightly charred.\n\nThe officer lifts a photograph from the floor: a young father, a dying mother, two children. On the back — 'Dickens Family.' He finds a ring in the woman's pocket that matches the mother's in the picture.",
+    dialogue: {
+      speaker: "Senior Detective",
+      line: "Unfortunately, sir… this lady is very likely your missing sister.",
+    },
+    onEnter: {
+      items: [{ name: "Family Photograph", detail: "The Dickens family. You left it beside Jack yourself." }],
+    },
     choices: [
-      { label: "Agree: two suicides, case nearly closed", next: "dead_suicide" },
-      { label: "Examine the photograph on the floor", next: "ch3_photo" },
+      {
+        label: "Examine Emma's pockets casually, and weep for the police",
+        next: "ch3_gun",
+        note: "You keep your hands clean",
+        effect: { flags: { found_hidden_letter: false } },
+      },
+      {
+        label: "Risk being noticed — search deep beneath her corset",
+        next: "ch3_gun",
+        note: "You pocket something",
+        effect: {
+          flags: { found_hidden_letter: true },
+          items: [
+            {
+              name: "Blood-Stained Letter",
+              detail: "Folded parchment from Emma's corset. Still sealed. Still unread.",
+            },
+          ],
+        },
+      },
     ],
-  },
-
-  dead_suicide: {
-    title: "An Heir's Haste",
-    text: "You press the suicide theory a little too eagerly. The senior officer watches you do it.\n\nTwo bodies, one heir, one fortune in wartime arms contracts — and the heir is the only man arguing that nobody murdered anyone. The inquest adjourns with one conclusion: dig deeper into the son.\n\nAnd once they start digging into you, they do not stop.",
-    fatal: true,
-    choices: [],
-  },
-
-  ch3_photo: {
-    chapter: "Chapter Three — The Villa",
-    title: "The Dickens Family",
-    text: "The officer picks up a photograph from the floor: a young father, a terminally ill mother, and a pair of siblings. On the back — 'Dickens Family.'\n\n\"That's what I looked like when I was young!\" you say in shock. \"Those are my biological parents, and my missing sister… but I've never owned this photo. How did my adoptive father get it?\"\n\nThe senior officer rushes downstairs, reaches into the dead woman's pocket, and pulls out a ring. It matches the ring worn by the mother in the picture.\n\n\"Unfortunately, sir… this lady is very likely your missing sister.\"",
-    choices: [{ label: "Collapse beside her, weeping", next: "ch3_gun" }],
   },
 
   ch3_gun: {
     chapter: "Chapter Three — The Villa",
     title: "The Wrong Caliber",
-    text: "You weep bitterly by her pale cheek until the officer gently pulls you up. \"If that's the case, the threatening letter was likely written to her. It seems she already knew her true identity.\"\n\nGradually, you recover your composure — and your logic. An Adams revolver rests in the woman's hand, one bullet missing from its cylinder.\n\nOne detail matters more than any other.",
+    text: "You weep beside her pale cheek until the officer gently lifts you up. An Adams revolver rests in her hand, one round missing from the cylinder.\n\nOne detail matters more than any other, and only you can afford to point it out.",
     choices: [
-      { label: "Point out: the temple wound doesn't match this gun's caliber — she was murdered", next: "ch4_forensic" },
+      { label: "\"The temple wound doesn't match this caliber. She was murdered.\"", next: "ch4_forensic" },
       { label: "Say nothing about the gun", next: "dead_silence" },
     ],
   },
 
   dead_silence: {
     title: "The Detail You Kept",
-    text: "You look at the Adams revolver in her hand and keep your observation to yourself. But the young officer in the corner is sharper than he looks — he notices your eyes fix on the wound, then on the gun, then look away.\n\n\"What did you just see, sir?\" he asks quietly. \"And why didn't you say it?\"\n\nA detective who hides evidence from the police has only one reason to do so.",
+    text: "You look at the Adams revolver and keep your observation to yourself. But the young officer is sharper than he looks — he sees your eyes fix on the wound, then the gun, then look away.\n\nA detective who hides evidence has only one reason to do so.",
     fatal: true,
     choices: [],
   },
@@ -192,31 +269,28 @@ const SCENES: Record<string, Scene> = {
   ch4_forensic: {
     chapter: "Chapter Four — The Theory",
     title: "Pollen and Pills",
-    text: "\"When I touched my sister earlier, I caught a faint scent of pollen,\" you note. A professional forensic examiner is brought in. The report confirms it: Miss Mary was drugged before her death.\n\nYou recall the banquet — the disappearance of your adoptive father, of Mary, of her husband — and form a bold theory:\n\nMary was offered to Mr. Jack by her husband Leo, as a 'gift.' Jack violated her, promising Leo a reward. But Mary dropped the family photograph — and Jack's composure shattered. Overcome with guilt, he took his own life. When Mary regained consciousness and confronted Leo hysterically, he beat her, then lured her into a room and murdered her — staging it as suicide.",
+    text: "\"When I touched my sister, I caught a faint scent of pollen.\" A forensic examiner is brought in; the report confirms she was drugged before her death.\n\nYou assemble the theory the police need: Leo offered his wife to Jack as a gift. Jack violated her. She dropped the family photograph, Jack's composure shattered, and he shot himself in guilt. Mary woke, confronted Leo, and Leo beat her, then staged her suicide.\n\nUpstairs the officers find a Webley revolver missing two rounds.",
+    dialogue: {
+      speaker: "William Beale",
+      line: "A Webley is a staple among military men. Both my father and Leo are in the trade — both would own one.",
+    },
     choices: [
-      { label: "Present the theory: Leo is the killer", next: "ch4_webley" },
+      { label: "Present the theory: Leo is the killer", next: "ch5_search" },
       { label: "Accuse the elderly butler instead", next: "dead_butler" },
     ],
   },
 
   dead_butler: {
     title: "The Wrong Man",
-    text: "You lay out an elaborate case against the butler. The senior officer listens politely — then dismantles it in four sentences. The butler served champagne in front of two hundred witnesses from nine until midnight without leaving the hall.\n\n\"Strange,\" the officer muses, \"that a detective of your talents would build a case that collapses this fast. Unless you needed it to collapse. Unless you needed anyone but the real killer blamed.\"\n\nHe does not say the real killer's name. He doesn't have to.",
+    text: "You build an elaborate case against the butler. The senior officer dismantles it in four sentences — the man poured champagne in front of two hundred witnesses all night.\n\n\"Strange that a detective of your talents would build a case that collapses this fast. Unless you needed it to.\"",
     fatal: true,
     choices: [],
-  },
-
-  ch4_webley: {
-    chapter: "Chapter Four — The Theory",
-    title: "The Webley",
-    text: "Upstairs, the officers discover a Webley revolver missing two bullets from its cylinder.\n\n\"This model is a staple among military men,\" you state confidently. \"You can match the bullet from my sister's body to it. Both my adoptive father and Leo work in the arms trade — both would own a Webley.\"\n\nThe police act swiftly, tracking down Leo and taking him into custody. He protests: \"What direct evidence do you actually have to prove I'm the killer?\"",
-    choices: [{ label: "Find the second Webley revolver", next: "ch5_search" }],
   },
 
   ch5_search: {
     chapter: "Chapter Five — The Search",
     title: "Something Too Convenient",
-    text: "\"Once we locate the second Webley revolver, your guilt will be indisputable,\" the young officer declares. As Leo's face turns pale, the officers join the effort to search for the missing firearm.\n\nOnly the senior officer remains deep in thought. Something feels too convenient — Emma's identity, the two spent rounds in Jack's revolver, the threatening letter.\n\nHe turns and glances at you, sitting in the lobby of the Metropolitan Police Department, lost in thought.",
+    text: "Leo is dragged in, protesting. The young officer promises the second Webley will seal his guilt, and the station empties into the search.\n\nOnly the senior detective stays behind, turning it over: Emma's identity, the two spent rounds, the letters. Everything fits a little too well. He looks across the lobby at you.",
     choices: [
       { label: "Hold his gaze, calm as still water", next: "ch6_well" },
       { label: "Look away and hurry home", next: "dead_gaze" },
@@ -225,7 +299,7 @@ const SCENES: Record<string, Scene> = {
 
   dead_gaze: {
     title: "The Man Who Looked Away",
-    text: "You drop your eyes and reach for your coat. It lasts two seconds — but in that gesture the senior officer reads an entire confession.\n\nHe never proves anything. He doesn't need to. From that day, an unmarked car sits outside your apartment, your telegrams are read before you receive them, and every favor you ever collected quietly turns to ash.\n\nThere are prisons without walls.",
+    text: "You drop your eyes and reach for your coat. Two seconds — and in that gesture the senior officer reads an entire confession.\n\nHe never proves anything. He doesn't need to. There are prisons without walls.",
     fatal: true,
     choices: [],
   },
@@ -233,52 +307,82 @@ const SCENES: Record<string, Scene> = {
   ch6_well: {
     chapter: "Chapter Six — The Verdict",
     title: "The Well",
-    text: "After a relentless search, officers dredge a damaged Webley revolver from a well near the villa. One bullet missing from its cylinder. Leo's guilt is sealed.\n\nA few days later, Leo is sentenced to death by hanging.\n\nThe senior officer looks at you with renewed suspicion. You simply shake your head, walk over, and whisper softly into his ear:\n\n\"I told you from the start — you found the right person.\"",
-    choices: [{ label: "The truth", next: "ch7_truth" }],
+    text: "Divers dredge a damaged Webley from a well near the villa, one round short. Leo's guilt is sealed, and days later he is sentenced to hang.\n\nThe senior detective watches you across the courtroom. You shake your head, walk over, and whisper into his ear:\n\n\"I told you from the start — you found the right person.\"",
+    choices: [{ label: "Chapter Seven — the truth", next: "ch7_truth" }],
   },
 
   ch7_truth: {
     chapter: "Chapter Seven — The Right Person",
     title: "The Perfect Crime",
-    text: "Yes. The police really had found the right person.\n\nYou arrived late so the butler would remember you. You stole Jack's revolver and sleeping pills while he talked business with the other arms dealers. During that 'business discussion,' Jack had finally confronted you — disgusted by his discovery that you were secretly selling weapons to the enemy on the black market. He threatened to cut you off, claiming your greed was destroying his empire.\n\nAnd you knew the threatening letter was addressed to you — written by your dear sister. She had uncovered your real identity and your ruthless tactics, and was blackmailing you to protect Jack's territory. But selling weapons during the war had made you a fortune — and you weren't going to let Jack's sudden burst of morality, or your sister's threats, take that away.\n\nThe tea you served was spiked; this time, Emma would not wake up. You swapped Leo's identical Webley into her hands, knowing he would assume he killed her in a drunken stupor and stage her suicide. You provoked a fight with Mr. Joseph to forge your alibi. Then you went upstairs to 'discuss business' — and shot Jack while the guests danced below. The family photograph was your final touch: a guilt-stricken suicide.\n\nOf course, a man like Jack would never end his life over something so trivial.\n\nDickens died so Jack could live. Jack died so you could keep your empire. And Emma — Emma tried to blackmail the wrong brother.\n\nThe case is closed. The detective solved it.",
-    choices: [],
+    text: "Yes. The police really had found the right person.\n\nYou arrived late so the butler would remember you. You stole Jack's revolver and his sleeping pills while he talked contracts. He had confronted you that night — disgusted that his son was selling to the enemy, threatening to cut you out entirely.\n\nYou knew the threatening letters were meant for you, written in your sister's hand. You spiked her tea, killed her with Jack's Webley, and pressed Leo's identical gun into her fingers so a drunk fool would stage a suicide for you. Then you built your alibi, went upstairs to 'discuss business,' and shot Jack while the guests danced below. The photograph was your final brushstroke.\n\nOf course, a man like Jack would never end his life over something so trivial.",
+    resolveEnding: true,
+    choices: [{ label: "See how your night truly ends", next: ENDING_GATE }],
+  },
+
+  /* --------------------------- ENDINGS --------------------------- */
+
+  ending_mastermind: {
+    chapter: "Ending I",
+    title: "The Mastermind's Triumph",
+    text: "The gavel struck the sound block with a heavy, final thud, echoing through the grand, solemn courtroom of the Old Bailey. Leo, trembling and pale as a ghost, was dragged away by two burly guards, his desperate pleas for mercy drowning in the murmurs of the gallery. He was sentenced to hang by the neck until dead. I stood up slowly, adjusting the lapels of my bespoke suit, masking my cold satisfaction with a perfectly rehearsed expression of solemn grief. As I walked out into the dimly lit corridor of the courthouse, the senior detective was waiting for me. His eyes, weathered and sharp, bored into mine as if trying to scrape away the lies.\n\n\"You won this time, Beale,\" he rasped, his voice thick with suppressed fury and exhaustion. \"But I know. The timing, the Webley in the well, the threatening letters… it's all too perfect. One day, you will slip, and I will be there.\"\n\nI simply stopped, tilted my fedora, and stepped closer to him. Leaning in, I whispered softly into his ear, \"I have always said, Inspector, that you found the right person. You just didn't have the stomach to catch him.\" I turned away, ignoring his clenched fists, and walked out the heavy oak doors.\n\nOutside, the London sky was weeping, a cold drizzle washing the cobblestone streets of the city. I lit a cigarette, the flare of the match briefly illuminating the dark alleyway. I had done it. I had flawlessly eliminated the only threats to my empire. Jack's restrictive morality was gone, and Emma's dangerous knowledge was buried with her. The black market military contracts were now solely in my hands, a steady river of gold flowing from the blood of the ongoing war. I took a deep drag of the tobacco, the smoke filling my lungs like the cordite on the Somme all those years ago. But this time, I wasn't the helpless orphan left crying in the mud. I was the king, and the shadows of this city were mine to rule.",
     ending: true,
+    choices: [],
+  },
+
+  ending_tragic: {
+    chapter: "Ending II",
+    title: "The Tragic Truth",
+    text: "My hands trembled slightly as I continued the charade of searching my sister's cold, lifeless body under the guise of a grieving brother. Beneath the silk lining of her ruined dress, tucked discreetly against her corset, my fingers brushed against a folded piece of parchment. It was stained with a single drop of her blood. Shielding it from the prying eyes of the police officers bustling around the crime scene, I slipped it into my pocket. It wasn't until hours later, sitting in the suffocating silence of my dark apartment, that I dared to unfold it.\n\nThe elegant handwriting was unmistakably Emma's. \"My dearest William, if you are reading this, I pray you are already miles away from London. Jack knows everything. He knows about your smuggling routes and the black market munitions. The War Economy Board is closing in, and Jack has struck a deal with Leo to hand you over as a scapegoat to save his own empire. I wrote that threatening letter not to extort you, but to terrify you into fleeing. I could not tell you the truth, for I knew your pride would make you stay and fight. Please, brother, run. I will hold them off as long as I can. Just live.\"\n\nThe paper slipped from my numb fingers, fluttering to the floor like a dying moth. A deafening roar rushed into my ears — not the sound of the London traffic, but the thunderous artillery blasts of the Somme. I saw my father's face, covered in mud and blood, sacrificing his own flesh to save Jack. And now, I had coldly, calculatingly, put a bullet through the brain of the only person in the world who genuinely loved me, the sister who had tried to throw herself over the bomb to save me. The guilt was a physical agony, tearing at my chest, suffocating me with its weight. I slowly walked over to my desk and picked up Emma's small Adams revolver, the one I had so cleverly manipulated to frame Leo. I raised the cold steel to my own temple. My father had died to give us life, and I had turned that life into a grotesque nightmare. \"I'm sorry, Emma,\" I whispered to the empty room. The gun fired, and the nightmare finally ended.",
+    ending: true,
+    fatal: true,
+    choices: [],
+  },
+
+  ending_above_law: {
+    chapter: "Ending III",
+    title: "Above the Law",
+    text: "\"It doesn't add up, Mr. Beale,\" the young police officer said, his voice surprisingly firm, echoing loudly in the cramped, sterile interrogation room. He had entirely dropped his previously naive demeanor, slamming a manila folder onto the metal table. The senior detective stood silently in the dim corner, his eyes wary, perhaps already sensing the dark and dangerous waters they were treading into. But the young officer was fueled by a reckless, naive thirst for justice. \"Your timeline is a mess. We spoke to Mr. Joseph, and he vehemently denies any physical altercation near the restrooms. He says you merely brushed past him and walked away. There was no 'near fight' to keep you occupied while the shots were fired upstairs.\"\n\nI maintained my composure, but a cold bead of sweat trickled down my spine. I had underestimated this rookie; I hadn't pushed Joseph hard enough to create a lasting scene. Before I could formulate a counter-lie, the young officer slammed his hands on the table. \"William Vernon Beale, I am officially holding you for the murders of Jack Vernon Beale and Emma Dickens. You are not leaving this station.\" The cold steel of the handcuffs clicked around my wrists with a brutal finality. I was thrown into a damp, windowless holding cell, the reality of the gallows looming heavily over me.\n\nBut the young officer fundamentally misunderstood how the world truly operated during wartime. He believed in absolute justice; I believed in leverage and power. I spent exactly forty-eight hours in that cell, waiting patiently in the dark.\n\nOn the morning of the third day, the heavy iron door finally swung open. A high-ranking official from the Ministry of Defense stood there, flanked by my expensive lawyers. The senior detective was there too, looking defeated but unsurprised, holding my tailored coat. The young officer, however, was noticeably absent.\n\n\"Lack of conclusive physical evidence, and a tragic loss of the lead investigator,\" the Ministry official declared flatly, handing over the official release papers. My syndicate — a vast web of corrupt politicians and black-market arms buyers who relied on my supply lines — had simply pulled the necessary strings.\n\nI walked out into the foggy London morning as a free man. It wasn't until I was sipping a vintage Scotch in my penthouse office that I saw the evening paper. A small headline on the third page caught my eye: Tragic Accident: Young Scotland Yard Officer Found Dead in the Thames. He had apparently slipped and fallen into the freezing river late last night. I slowly folded the newspaper, took a deep sip of the smoky liquor, and looked out over the sprawling, ignorant city. In a world burning with war, naive justice was a fatal flaw, and I was the wealthiest survivor in the market.",
+    ending: true,
+    choices: [],
   },
 };
 
 const START_SCENE = "prologue";
 
-/* Chapter illustration shown above each scene (fatal branches inherit
-   the illustration of the moment they went wrong). */
+function resolveEnding(flags: Flags): string {
+  if (flags.found_hidden_letter) return "ending_tragic";
+  if (flags.failed_alibi_check) return "ending_above_law";
+  return "ending_mastermind";
+}
+
 const SCENE_IMAGES: Record<string, { src: string; alt: string }> = {
-  prologue: { src: imgTrench, alt: "A soldier shields another in a WWI trench as bombs fall" },
+  prologue: { src: imgTrench, alt: "A soldier shields another in a trench as bombs fall" },
   ch1_arrive: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
   dead_alibi: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
   ch1_banquet: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
-  ch1_hall: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
   ch1_gallery: { src: imgGallery, alt: "Guests gaze at a portrait in a dark gallery" },
-  dead_leo: { src: imgGallery, alt: "Guests gaze at a portrait in a dark gallery" },
+  ch1_bathroom: { src: imgGallery, alt: "A dim corridor outside the gallery" },
   ch2_knock: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   dead_grief: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   ch2_interrogate: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   dead_story: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
-  ch2_gunshots: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  ch2_letters: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   ch3_villa: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
-  dead_suicide: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
-  ch3_photo: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   ch3_gun: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   dead_silence: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   ch4_forensic: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   dead_butler: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
-  ch4_webley: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   ch5_search: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
   dead_gaze: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   ch6_well: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
-  ch7_truth: { src: imgConfession, alt: "A detective whispers to a man beneath a streetlamp, a noose in the dark" },
+  ch7_truth: { src: imgConfession, alt: "A detective whispers to a man beneath a streetlamp" },
+  ending_mastermind: { src: imgConfession, alt: "A man in a fedora walking into the London rain" },
+  ending_tragic: { src: imgVilla, alt: "A revolver and a bloodstained letter on a desk" },
+  ending_above_law: { src: imgInterrogation, alt: "An interrogation room lit by a single lamp" },
 };
 
 /* ------------------------------------------------------------------ */
-/* Typewriter hook                                                     */
+/* Typewriter                                                          */
 /* ------------------------------------------------------------------ */
 
 function useTypewriter(text: string) {
@@ -293,9 +397,9 @@ function useTypewriter(text: string) {
           window.clearInterval(id);
           return l;
         }
-        return l + 2;
+        return l + 3;
       });
-    }, 18);
+    }, 16);
     return () => window.clearInterval(id);
   }, [text]);
 
@@ -304,143 +408,367 @@ function useTypewriter(text: string) {
 }
 
 /* ------------------------------------------------------------------ */
-/* UI                                                                  */
+/* Game                                                                */
 /* ------------------------------------------------------------------ */
 
+type Snapshot = { id: string; flags: Flags; items: Item[] };
+
+function applyEffect(
+  effect: Effect | undefined,
+  flags: Flags,
+  items: Item[],
+): { flags: Flags; items: Item[] } {
+  if (!effect) return { flags, items };
+  const nextFlags = { ...flags, ...(effect.flags ?? {}) };
+  const nextItems = [...items];
+  for (const it of effect.items ?? []) {
+    if (!nextItems.some((x) => x.name === it.name)) nextItems.push(it);
+  }
+  return { flags: nextFlags, items: nextItems };
+}
+
+function makeStart(): Snapshot {
+  const base = applyEffect(SCENES[START_SCENE]!.onEnter, INITIAL_FLAGS, []);
+  return { id: START_SCENE, ...base };
+}
+
 function Index() {
-  const [sceneId, setSceneId] = useState(START_SCENE);
+  const [history, setHistory] = useState<Snapshot[]>(() => [makeStart()]);
+  const [panel, setPanel] = useState<null | "inventory" | "timeline">(null);
   const [flashKey, setFlashKey] = useState(0);
-  const scene = SCENES[sceneId]!;
-  const image = SCENE_IMAGES[sceneId];
+
+  const current = history[history.length - 1]!;
+  const scene = SCENES[current.id]!;
+  const image = SCENE_IMAGES[current.id];
   const { shown, done, skip } = useTypewriter(scene.text);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
+    topRef.current?.scrollIntoView({ block: "start" });
     if (scene.fatal) setFlashKey((k) => k + 1);
-  }, [sceneId, scene.fatal]);
+  }, [current.id, scene.fatal]);
 
-  const restart = () => setSceneId(START_SCENE);
+  const go = (choice: Choice) => {
+    const afterChoice = applyEffect(choice.effect, current.flags, current.items);
+    const nextId =
+      choice.next === ENDING_GATE ? resolveEnding(afterChoice.flags) : choice.next;
+    const afterEnter = applyEffect(SCENES[nextId]!.onEnter, afterChoice.flags, afterChoice.items);
+    setHistory((h) => [...h, { id: nextId, ...afterEnter }]);
+  };
+
+  const rewind = (index: number) => {
+    setHistory((h) => h.slice(0, index + 1));
+    setPanel(null);
+  };
+
+  const restart = () => {
+    setHistory([makeStart()]);
+    setPanel(null);
+  };
+
+  const flagList = useMemo(
+    () => [
+      { key: "Alibi", value: current.flags.failed_alibi_check ? "Weak — Joseph barely noticed" : "Airtight — a scene was made" },
+      { key: "Hidden letter", value: current.flags.found_hidden_letter ? "In your coat pocket" : "Never searched for" },
+    ],
+    [current.flags],
+  );
 
   return (
     <main
       className="vignette grain relative min-h-screen bg-noir-bg font-typewriter text-noir-ink"
       style={{ animation: "lamp-flicker 7s linear infinite" }}
     >
-      {/* blood-red flash on fatal choices */}
       {scene.fatal && flashKey > 0 && (
         <div
           key={flashKey}
           className="animate-red-flash pointer-events-none fixed inset-0 z-50 bg-noir-blood-bright"
         />
       )}
-
-      {/* drifting smoke */}
       <div className="smoke pointer-events-none fixed inset-0 z-0" />
 
-      <div ref={scrollRef} className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col px-6 py-14 sm:py-20">
-        {/* masthead */}
+      {/* top-right controls */}
+      <div className="fixed right-3 top-3 z-40 flex items-center gap-2 sm:right-5 sm:top-5">
+        <button
+          onClick={() => setPanel(panel === "inventory" ? null : "inventory")}
+          aria-label="Open case file and inventory"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h5l1.5 2h8.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />
+          </svg>
+        </button>
+        <button
+          onClick={() => setPanel(panel === "timeline" ? null : "timeline")}
+          aria-label="Open the pocket watch timeline"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 3.5v-1.2M10 2.3h4" />
+            <circle cx="12" cy="13" r="7.5" />
+            <path d="M12 9.5V13l2.5 1.8" />
+          </svg>
+        </button>
+      </div>
+
+      {/* slide-out panel */}
+      <AnimatePresence>
+        {panel && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40 bg-noir-bg/70 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPanel(null)}
+            />
+            <motion.aside
+              key={panel}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 260, damping: 30 }}
+              className="fixed right-0 top-0 z-50 flex h-full w-[min(23rem,90vw)] flex-col border-l border-noir-brass/30 bg-noir-bg-raised/95 p-6 pt-20 shadow-[0_0_80px_rgba(0,0,0,0.8)] backdrop-blur"
+            >
+              <h2 className="font-noir text-lg italic text-noir-brass">
+                {panel === "inventory" ? "Case File" : "The Pocket Watch"}
+              </h2>
+              <div className="mt-1 h-px w-16 bg-noir-blood" />
+
+              <div className="mt-6 flex-1 overflow-y-auto pr-1">
+                {panel === "inventory" ? (
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-noir-ink-dim">Evidence</p>
+                      <ul className="mt-3 space-y-3">
+                        {current.items.length === 0 && (
+                          <li className="text-sm text-noir-ink-dim">Your pockets are empty.</li>
+                        )}
+                        {current.items.map((it) => (
+                          <li key={it.name} className="border border-noir-brass/25 bg-noir-bg/60 p-3">
+                            <p className="text-sm text-noir-brass">{it.name}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-noir-ink-dim">{it.detail}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-noir-ink-dim">Standing</p>
+                      <ul className="mt-3 space-y-2">
+                        {flagList.map((f) => (
+                          <li key={f.key} className="text-xs leading-relaxed text-noir-ink/90">
+                            <span className="text-noir-blood-bright">{f.key}: </span>
+                            {f.value}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs leading-relaxed text-noir-ink-dim">
+                      Turn the hands back. Choose any moment you have lived and play it differently — every
+                      choice after it will be forgotten.
+                    </p>
+                    <ol className="mt-5 space-y-1">
+                      {history.map((h, i) => {
+                        const s = SCENES[h.id]!;
+                        const isNow = i === history.length - 1;
+                        return (
+                          <li key={`${h.id}-${i}`} className="relative pl-6">
+                            <span className="absolute left-[7px] top-0 h-full w-px bg-noir-brass/25" />
+                            <span
+                              className={`absolute left-0 top-3 h-[15px] w-[15px] rounded-full border ${
+                                isNow
+                                  ? "border-noir-blood-bright bg-noir-blood-bright/70"
+                                  : "border-noir-brass/50 bg-noir-bg"
+                              }`}
+                            />
+                            <button
+                              disabled={isNow}
+                              onClick={() => rewind(i)}
+                              className={`w-full py-2 text-left text-sm transition-colors ${
+                                isNow
+                                  ? "cursor-default text-noir-blood-bright"
+                                  : "text-noir-ink/85 hover:text-noir-brass"
+                              }`}
+                            >
+                              <span className="block text-[10px] uppercase tracking-[0.25em] text-noir-ink-dim">
+                                {s.chapter ?? "A wrong turn"}
+                              </span>
+                              {s.title ?? h.id}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                    <button
+                      onClick={restart}
+                      className="mt-8 w-full border border-noir-brass/50 px-4 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 hover:text-noir-blood-bright"
+                    >
+                      Wind back to 1916
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-14 sm:px-6 sm:py-20">
+        <div ref={topRef} />
         <header className="mb-10 text-center">
           <p className="text-[11px] uppercase tracking-[0.35em] text-noir-ink-dim">
             An Interactive Noir Mystery
           </p>
           <h1 className="mt-2 font-noir text-2xl font-bold italic text-noir-brass sm:text-3xl">
-            The Beale Inheritance
+            The Somme Echoes
           </h1>
           <div className="mx-auto mt-4 h-px w-24 bg-noir-blood" />
         </header>
 
-        {/* scene card */}
-        <div key={sceneId} className="animate-fade-in flex flex-1 flex-col">
-          {image && (
-            <figure className="mb-8 border border-noir-brass/25 p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]">
-              <img
-                src={image.src}
-                alt={image.alt}
-                width={1280}
-                height={720}
-                loading="lazy"
-                className="w-full object-cover opacity-90 sepia-[0.25]"
-              />
-            </figure>
-          )}
-          {scene.chapter && (
-            <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-noir-blood-bright">
-              {scene.chapter}
-            </p>
-          )}
-          {scene.title && (
-            <h2
-              className={`mb-6 font-noir text-xl italic text-noir-ink sm:text-2xl ${
-                scene.fatal || scene.ending ? "animate-tremble text-noir-blood-bright" : ""
-              }`}
-            >
-              {scene.title}
-            </h2>
-          )}
-
-          {/* story text — click to skip the typewriter */}
-          <div
-            onClick={skip}
-            className={`cursor-pointer text-[15px] leading-relaxed whitespace-pre-line text-noir-ink/90 sm:text-base ${
-              done ? "" : "caret"
-            }`}
-            aria-live="polite"
+        <AnimatePresence mode="wait">
+          <motion.section
+            key={current.id + history.length}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="flex flex-1 flex-col"
           >
-            {shown}
-          </div>
-
-          {/* choices */}
-          <div className="mt-10 flex flex-col gap-3">
-            {done &&
-              !scene.fatal &&
-              !scene.ending &&
-              scene.choices.map((c) => (
-                <button
-                  key={c.label}
-                  onClick={() => setSceneId(c.next)}
-                  className="animate-scale-in border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-3 text-left text-sm tracking-wide text-noir-ink transition-all duration-200 hover:border-noir-blood-bright hover:bg-noir-blood/20 hover:pl-7 hover:text-noir-blood-bright focus:outline-none focus:ring-1 focus:ring-noir-blood-bright"
-                >
-                  <span className="mr-2 text-noir-blood-bright">▸</span>
-                  {c.label}
-                </button>
-              ))}
-
-            {done && scene.fatal && (
-              <div className="animate-scale-in border border-noir-blood-bright/60 bg-noir-blood/15 px-5 py-6 text-center">
-                <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-blood-bright">
-                  The Trail Goes Cold
-                </p>
-                <p className="mt-2 text-xs text-noir-ink-dim">
-                  One wrong turn, and the case — or the detective — is finished.
-                </p>
-                <button
-                  onClick={restart}
-                  className="mt-5 border border-noir-brass/50 px-6 py-2 text-sm tracking-widest text-noir-brass transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 hover:text-noir-blood-bright"
-                >
-                  Begin Again — 1916
-                </button>
-              </div>
+            {image && (
+              <figure className="mb-8 border border-noir-brass/25 p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]">
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  width={1280}
+                  height={720}
+                  loading="lazy"
+                  className="w-full object-cover opacity-90 sepia-[0.25]"
+                />
+              </figure>
             )}
 
-            {done && scene.ending && (
-              <div className="animate-scale-in border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-6 text-center">
-                <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
-                  Case Closed
-                </p>
-                <p className="mt-2 text-xs text-noir-ink-dim">
-                  You reached the true ending. Every alibi held. Every thread was cut.
-                </p>
-                <button
-                  onClick={restart}
-                  className="mt-5 border border-noir-brass/50 px-6 py-2 text-sm tracking-widest text-noir-brass transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 hover:text-noir-blood-bright"
-                >
-                  Read It Again, Knowing What You Know
-                </button>
-              </div>
+            {scene.chapter && (
+              <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-noir-blood-bright">
+                {scene.chapter}
+              </p>
             )}
-          </div>
-        </div>
+            {scene.title && (
+              <h2
+                className={`mb-6 font-noir text-xl italic sm:text-2xl ${
+                  scene.fatal || scene.ending ? "animate-tremble text-noir-blood-bright" : "text-noir-ink"
+                }`}
+              >
+                {scene.title}
+              </h2>
+            )}
+
+            <div
+              onClick={skip}
+              className={`cursor-pointer whitespace-pre-line text-[15px] leading-relaxed text-noir-ink/90 sm:text-base ${
+                done ? "" : "caret"
+              }`}
+              aria-live="polite"
+            >
+              {shown}
+            </div>
+
+            {/* dialogue plate */}
+            {scene.dialogue && done && (
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mt-8 border-l-2 border-noir-blood-bright bg-noir-bg-raised/70 px-5 py-4"
+              >
+                <p className="text-[10px] uppercase tracking-[0.3em] text-noir-brass">
+                  {scene.dialogue.speaker}
+                </p>
+                <p className="mt-2 font-noir text-base italic leading-relaxed text-noir-ink">
+                  “{scene.dialogue.line}”
+                </p>
+              </motion.div>
+            )}
+
+            {/* choice cards */}
+            <div className="mt-10 flex flex-col gap-3">
+              {done &&
+                !scene.fatal &&
+                !scene.ending &&
+                scene.choices.map((c, i) => (
+                  <motion.button
+                    key={c.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 * i, duration: 0.35 }}
+                    whileHover={{ x: 6 }}
+                    onClick={() => go(c)}
+                    className="group border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-4 text-left text-sm tracking-wide text-noir-ink transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 focus:outline-none focus:ring-1 focus:ring-noir-blood-bright"
+                  >
+                    <span className="mr-2 text-noir-blood-bright">▸</span>
+                    {c.label}
+                    {c.note && (
+                      <span className="mt-2 block text-[10px] uppercase tracking-[0.25em] text-noir-ink-dim">
+                        {c.note}
+                      </span>
+                    )}
+                  </motion.button>
+                ))}
+
+              {done && scene.fatal && !scene.ending && (
+                <div className="border border-noir-blood-bright/60 bg-noir-blood/15 px-5 py-6 text-center">
+                  <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-blood-bright">
+                    The Trail Goes Cold
+                  </p>
+                  <p className="mt-2 text-xs text-noir-ink-dim">
+                    Open the pocket watch to turn back to any earlier moment.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <button
+                      onClick={() => setPanel("timeline")}
+                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+                    >
+                      Rewind time
+                    </button>
+                    <button
+                      onClick={restart}
+                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+                    >
+                      Begin again — 1916
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {done && scene.ending && (
+                <div className="border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-6 text-center">
+                  <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
+                    Case Closed
+                  </p>
+                  <p className="mt-2 text-xs text-noir-ink-dim">
+                    Three endings wait behind two decisions: the washroom, and your sister's pocket.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <button
+                      onClick={() => setPanel("timeline")}
+                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+                    >
+                      Rewind and choose differently
+                    </button>
+                    <button
+                      onClick={restart}
+                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+                    >
+                      Begin again — 1916
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        </AnimatePresence>
 
         <footer className="mt-14 text-center text-[10px] uppercase tracking-[0.3em] text-noir-ink-dim/60">
           London · 1943 · Every choice is evidence
