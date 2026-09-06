@@ -182,7 +182,7 @@ const SCENES: Record<string, Scene> = {
   ch2_interrogate: {
     chapter: "Chapter Two — The Knock",
     title: "The Interrogation",
-    text: "At the station you recite your timeline: fifteen minutes late from traffic; an upstairs argument with your father about the black-market rumours; the banquet; bumping the butler while dancing; the gallery; an upset stomach; the washroom corridor and Mr. Joseph; Miss Mary disheveled and her husband strangely elated; the cup of tea; then home.\n\nThe senior officer lets the silence stretch before he speaks.",
+    text: "At the station you truthfully recite your timeline: fifteen minutes late from an accident on the road; an upstairs disagreement with your father over business; the banquet; bumping the butler while dancing; the gallery; an upset stomach; the washroom corridor and Mr. Joseph; Miss Mary disheveled and her husband strangely elated; the cup of tea; then home.\n\nThe young officer nods to the senior one — your story checks out. But the senior officer lets the silence stretch before he speaks.",
     dialogue: {
       speaker: "Senior Detective",
       line: "You're lying. You were obviously drunk — how do you remember all of this so clearly?",
@@ -203,10 +203,10 @@ const SCENES: Record<string, Scene> = {
   ch2_letters: {
     chapter: "Chapter Two — The Knock",
     title: "The Threatening Letters",
-    text: "\"Did you hear any gunshots?\"\n\n\"I did. But anyone who knew my father knew he kept a target in his room. Gunshots in that house are furniture.\"\n\nThe young officer nods; your statement checks out. Then another officer enters and lays several envelopes on the table.",
+    text: "\"Did you hear any gunshots?\"\n\n\"I did. But everyone knows my adoptive father has a hobby of target shooting. He made a target in his room and practices when he's free. Gunshots in that house are furniture.\"\n\nThe young officer nods; your statement checks out. Then another officer enters, holding several envelopes found in the estate's mail.",
     dialogue: {
       speaker: "The Letters",
-      line: "I know your real name, and I know how you profit from this war. You will not survive this month.",
+      line: "I know who you are. You will not survive this month.",
     },
     onEnter: {
       items: [{ name: "Threatening Letters", detail: "Elegant hand. Addressed to you — though the police do not know that." }],
