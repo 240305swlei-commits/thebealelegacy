@@ -455,6 +455,33 @@ function Index() {
     if (scene.fatal) setFlashKey((k) => k + 1);
   }, [current.id, scene.fatal]);
 
+  /* ------------------------ score ------------------------ */
+  const scoreRef = useRef<NoirScore | null>(null);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const score = new NoirScore();
+    scoreRef.current = score;
+    const kick = () => score.start();
+    window.addEventListener("pointerdown", kick);
+    window.addEventListener("keydown", kick);
+    return () => {
+      window.removeEventListener("pointerdown", kick);
+      window.removeEventListener("keydown", kick);
+      score.stop();
+      scoreRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    scoreRef.current?.setTrack(SCENE_TRACKS[current.id] ?? "mystery");
+  }, [current.id]);
+
+  useEffect(() => {
+    scoreRef.current?.setMuted(muted);
+  }, [muted]);
+
+
   const go = (choice: Choice) => {
     const afterChoice = applyEffect(choice.effect, current.flags, current.items);
     const nextId =
