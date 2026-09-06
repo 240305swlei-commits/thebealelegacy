@@ -77,14 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The Beale Inheritance — An Interactive Noir Mystery" },
+      { title: "The Somme Echoes — A 1940s Noir Mystery Game" },
       {
         name: "description",
         content:
           "A branching choose-your-own-adventure murder mystery. A banquet, two bodies, one perfect detective. Every choice can close the case — or close around your neck.",
       },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "The Beale Inheritance — An Interactive Noir Mystery" },
+      { property: "og:title", content: "The Somme Echoes — A 1940s Noir Mystery Game" },
       {
         property: "og:description",
         content:
