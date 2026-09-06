@@ -76,12 +76,12 @@ const ENDING_GATE = "__ending__";
 
 const SCENES: Record<string, Scene> = {
   prologue: {
-    chapter: "Background — The Somme, 1916",
+    chapter: "Background — The Somme, July 1916",
     title: "The Promise",
-    text: "Smoke and gunpowder fill the battlefield. The sky is torn by the roar of fighter planes, and thunderous booms shake the earth. Two young soldiers crawl through the trenches as bombs fall, one after another, the rain of explosives sweeping toward them.\n\nSuddenly one soldier throws himself over the other, shielding him with his own body. The bomb does not score a direct hit — but the soldier on top is mortally wounded.",
+    text: "July 1916, the Battle of the Somme. Smoke and the heavy stench of gunpowder fill the battlefield air. The sky is cut by the roar of German bombers, and thunderous artillery shakes the muddy earth. Corpses lie scattered on the ground; countless lives vanish in an instant, leaving only coldness and loneliness.\n\nTwo young British soldiers crawl through the trenches as enemy planes drop bombs one after another. Suddenly one throws himself over the other, shielding him with his own body. It is not a direct hit — but the soldier on top is mortally wounded.",
     dialogue: {
       speaker: "Dickens",
-      line: "Jack… stay alive. Go to the Baker Street Orphanage, and please — take good care of my children. Emma and William.",
+      line: "Jack… stay alive. Go to the Baker Street Orphanage. Please — take good care of my children, Emma and William.",
     },
     choices: [{ label: "Twenty-seven years pass…", next: "ch1_arrive" }],
   },
@@ -89,7 +89,7 @@ const SCENES: Record<string, Scene> = {
   ch1_arrive: {
     chapter: "Chapter One — The Banquet",
     title: "The Invitation",
-    text: "July 11, 1943. Guests in gorgeous evening gowns walk a marble corridor toward the manor's banquet hall. Candlelight flickers across silverware, fine porcelain and crystal.\n\nYou are William Vernon Beale — adopted son of the host, a detective of some reputation, and, in the hours the world does not see, an arms dealer undercutting his own father's contracts. Your car was delayed. The banquet began at nine; it is now a quarter past, and every eye in the hall turns as you enter. Exactly as you intended.",
+    text: "July 11, 1943, a grand London manor. Guests in evening gowns and sparkling jewelry walk a marble corridor toward the banquet hall, warm light on the polished floor. The host is your adoptive father, Jack Vernon Beale — now a senior official in the Ministry of Production. Nominally a victory celebration; covertly, a night to secure lucrative kickbacks from American suppliers under the Lend-Lease Act.\n\nYou are William Vernon Beale — a detective of some reputation, and, in the hours the world does not see, an arms dealer smuggling wartime munitions and undercutting his own father's business. Your car was delayed. The banquet began at nine; it is now a quarter past, and every eye in the hall turns as you enter. Exactly as you intended.",
     dialogue: {
       speaker: "The Butler",
       line: "Young master, why did you bring an invitation? Come — let me store your coat.",
