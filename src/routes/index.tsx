@@ -512,23 +512,16 @@ function Index() {
       </div>
 
       {/* slide-out panel */}
-      <AnimatePresence>
+      <>
         {panel && (
           <>
-            <motion.div
-              className="fixed inset-0 z-40 bg-noir-bg/70 backdrop-blur-[2px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div
+              className="animate-fade-in fixed inset-0 z-40 bg-noir-bg/70 backdrop-blur-[2px]"
               onClick={() => setPanel(null)}
             />
-            <motion.aside
+            <aside
               key={panel}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-[min(23rem,90vw)] flex-col border-l border-noir-brass/30 bg-noir-bg-raised/95 p-6 pt-20 shadow-[0_0_80px_rgba(0,0,0,0.8)] backdrop-blur"
+              className="animate-slide-in-right fixed right-0 top-0 z-50 flex h-full w-[min(23rem,90vw)] flex-col border-l border-noir-brass/30 bg-noir-bg-raised/95 p-6 pt-20 shadow-[0_0_80px_rgba(0,0,0,0.8)] backdrop-blur"
             >
               <h2 className="font-noir text-lg italic text-noir-brass">
                 {panel === "inventory" ? "Case File" : "The Pocket Watch"}
@@ -611,10 +604,10 @@ function Index() {
                   </div>
                 )}
               </div>
-            </motion.aside>
+            </aside>
           </>
         )}
-      </AnimatePresence>
+      </>
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-14 sm:px-6 sm:py-20">
         <div ref={topRef} />
@@ -628,15 +621,10 @@ function Index() {
           <div className="mx-auto mt-4 h-px w-24 bg-noir-blood" />
         </header>
 
-        <AnimatePresence mode="wait">
-          <motion.section
-            key={current.id + history.length}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="flex flex-1 flex-col"
-          >
+        <section
+          key={current.id + history.length}
+          className="animate-fade-in flex flex-1 flex-col"
+        >
             {image && (
               <figure className="mb-8 border border-noir-brass/25 p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]">
                 <img
@@ -677,11 +665,8 @@ function Index() {
 
             {/* dialogue plate */}
             {scene.dialogue && done && (
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="mt-8 border-l-2 border-noir-blood-bright bg-noir-bg-raised/70 px-5 py-4"
+              <div
+                className="animate-fade-in mt-8 border-l-2 border-noir-blood-bright bg-noir-bg-raised/70 px-5 py-4"
               >
                 <p className="text-[10px] uppercase tracking-[0.3em] text-noir-brass">
                   {scene.dialogue.speaker}
@@ -689,7 +674,7 @@ function Index() {
                 <p className="mt-2 font-noir text-base italic leading-relaxed text-noir-ink">
                   “{scene.dialogue.line}”
                 </p>
-              </motion.div>
+              </div>
             )}
 
             {/* choice cards */}
@@ -698,14 +683,11 @@ function Index() {
                 !scene.fatal &&
                 !scene.ending &&
                 scene.choices.map((c, i) => (
-                  <motion.button
+                  <button
                     key={c.label}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.12 * i, duration: 0.35 }}
-                    whileHover={{ x: 6 }}
+                    style={{ animationDelay: `${i * 0.12}s`, animationFillMode: "backwards" }}
                     onClick={() => go(c)}
-                    className="group border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-4 text-left text-sm tracking-wide text-noir-ink transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 focus:outline-none focus:ring-1 focus:ring-noir-blood-bright"
+                    className="animate-fade-in group border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-4 text-left text-sm tracking-wide text-noir-ink transition-colors hover:border-noir-blood-bright hover:bg-noir-blood/20 hover:pl-7 focus:outline-none focus:ring-1 focus:ring-noir-blood-bright"
                   >
                     <span className="mr-2 text-noir-blood-bright">▸</span>
                     {c.label}
@@ -714,7 +696,7 @@ function Index() {
                         {c.note}
                       </span>
                     )}
-                  </motion.button>
+                  </button>
                 ))}
 
               {done && scene.fatal && !scene.ending && (
@@ -767,8 +749,7 @@ function Index() {
                 </div>
               )}
             </div>
-          </motion.section>
-        </AnimatePresence>
+        </section>
 
         <footer className="mt-14 text-center text-[10px] uppercase tracking-[0.3em] text-noir-ink-dim/60">
           London · 1943 · Every choice is evidence
