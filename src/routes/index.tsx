@@ -9,6 +9,13 @@ import imgInterrogation from "@/assets/scene-interrogation.jpg";
 import imgVilla from "@/assets/scene-villa.jpg";
 import imgWell from "@/assets/scene-well.jpg";
 import imgConfession from "@/assets/scene-confession.jpg";
+import { NoirScore, type TrackId } from "@/lib/score";
+
+const SCENE_TRACKS: Record<string, TrackId> = {
+  ending_mastermind: "triumph",
+  ending_tragic: "tragic",
+  ending_above_law: "above_law",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -447,6 +454,33 @@ function Index() {
     topRef.current?.scrollIntoView({ block: "start" });
     if (scene.fatal) setFlashKey((k) => k + 1);
   }, [current.id, scene.fatal]);
+
+  /* ------------------------ score ------------------------ */
+  const scoreRef = useRef<NoirScore | null>(null);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const score = new NoirScore();
+    scoreRef.current = score;
+    const kick = () => score.start();
+    window.addEventListener("pointerdown", kick);
+    window.addEventListener("keydown", kick);
+    return () => {
+      window.removeEventListener("pointerdown", kick);
+      window.removeEventListener("keydown", kick);
+      score.stop();
+      scoreRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    scoreRef.current?.setTrack(SCENE_TRACKS[current.id] ?? "mystery");
+  }, [current.id]);
+
+  useEffect(() => {
+    scoreRef.current?.setMuted(muted);
+  }, [muted]);
+
 
   const go = (choice: Choice) => {
     const afterChoice = applyEffect(choice.effect, current.flags, current.items);
