@@ -113,7 +113,7 @@ const SCENES: Record<string, Scene> = {
   ch1_banquet: {
     chapter: "Chapter One — The Banquet",
     title: "Champagne and Candlelight",
-    text: "Dish after dish arrives — Italian pasta, French foie gras, German sausages. Dancers, musicians and a mysterious magician hold the guests entranced. Upstairs, behind a closed door, Jack argues with three men about contracts, quotas, and a son who has been selling to the wrong buyers.\n\nAs the night deepens, the butler steps onto the landing.",
+    text: "Dish after dish arrives — Italian pasta, French foie gras, German sausages — each a work of art. Dancers, musicians and a mysterious magician hold the guests entranced, as if they were in a dream. Upstairs, behind a closed door, Jack argues with arms men about contracts, quotas, and a son who has been stealing his business.\n\nAs the night deepens, the banquet reaches its climax and the elderly butler steps onto the landing.",
     dialogue: {
       speaker: "The Butler",
       line: "The master is temporarily occupied, but the true essence of the banquet is about to be revealed. Please follow me to the gallery.",
