@@ -9,6 +9,13 @@ import imgInterrogation from "@/assets/scene-interrogation.jpg";
 import imgVilla from "@/assets/scene-villa.jpg";
 import imgWell from "@/assets/scene-well.jpg";
 import imgConfession from "@/assets/scene-confession.jpg";
+import { NoirScore, type TrackId } from "@/lib/score";
+
+const SCENE_TRACKS: Record<string, TrackId> = {
+  ending_mastermind: "triumph",
+  ending_tragic: "tragic",
+  ending_above_law: "above_law",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
