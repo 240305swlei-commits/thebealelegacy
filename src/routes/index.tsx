@@ -524,6 +524,24 @@ function Index() {
       {/* top-right controls */}
       <div className="fixed right-3 top-3 z-40 flex items-center gap-2 sm:right-5 sm:top-5">
         <button
+          onClick={() => {
+            scoreRef.current?.start();
+            setMuted((m) => !m);
+          }}
+          aria-label={muted ? "Turn music on" : "Mute music"}
+          title={muted ? "Music off — tap to play" : "Music on — tap to mute"}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" />
+            {muted ? (
+              <path d="M16 9.5l5 5M21 9.5l-5 5" />
+            ) : (
+              <path d="M15.5 9.5a4.2 4.2 0 0 1 0 5M18.2 7.2a7.4 7.4 0 0 1 0 9.6" />
+            )}
+          </svg>
+        </button>
+        <button
           onClick={() => setPanel(panel === "inventory" ? null : "inventory")}
           aria-label="Open case file and inventory"
           className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
