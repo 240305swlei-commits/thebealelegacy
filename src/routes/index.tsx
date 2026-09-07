@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import imgTrench from "@/assets/scene-trench.jpg";
-import imgBanquet from "@/assets/scene-banquet.jpg";
-import imgGallery from "@/assets/scene-gallery.jpg";
-import imgInterrogation from "@/assets/scene-interrogation.jpg";
-import imgVilla from "@/assets/scene-villa.jpg";
-import imgWell from "@/assets/scene-well.jpg";
-import imgConfession from "@/assets/scene-confession.jpg";
+import imgTrench from "@/assets/scene-trench.gif";
+import imgBanquet from "@/assets/scene-banquet.gif";
+import imgGallery from "@/assets/scene-gallery.gif";
+import imgInterrogation from "@/assets/scene-interrogation.gif";
+import imgVilla from "@/assets/scene-villa.gif";
+import imgWell from "@/assets/scene-well.gif";
+import imgConfession from "@/assets/scene-confession.gif";
 import { NoirScore, type TrackId } from "@/lib/score";
 
 const SCENE_TRACKS: Record<string, TrackId> = {

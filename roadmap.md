@@ -7,4 +7,4 @@
 - [x] Verify in preview (no console errors; fatal branch + restart work)
 
 ## Open
-- [ ] Convert story scene images into animated GIFs (user request)
+- [x] Convert story scene images into animated GIFs (user request)
