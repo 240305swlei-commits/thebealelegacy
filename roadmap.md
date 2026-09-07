@@ -5,3 +5,6 @@
 - [x] Build CYOA engine + branching scenes in src/routes/index.tsx (typewriter effect, choices, game-over branches, true ending)
 - [x] Update __root.tsx head (fonts, title) and index head() metadata
 - [x] Verify in preview (no console errors; fatal branch + restart work)
+
+## Open
+- [ ] Convert story scene images into animated GIFs (user request)
