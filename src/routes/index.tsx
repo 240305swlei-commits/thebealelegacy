@@ -159,6 +159,18 @@ const SCENES: Record<string, Scene> = {
     },
     choices: [
       {
+        label: "Step politely away with the slightest brush of his shoulder",
+        next: "ch2_knock",
+        note: "Weak alibi",
+        effect: { flags: { failed_alibi_check: true } },
+      },
+      {
+        label: "Threaten him quietly, mouth close to his ear, so no one else hears",
+        next: "ch2_knock",
+        note: "Weak alibi — no witnesses",
+        effect: { flags: { failed_alibi_check: true } },
+      },
+      {
         label: "Deliberately insult him and shove him hard — make a scene the whole floor hears",
         next: "ch2_knock",
         note: "Perfect alibi locked",
@@ -166,12 +178,6 @@ const SCENES: Record<string, Scene> = {
           flags: { failed_alibi_check: false },
           items: [{ name: "Witnessed Quarrel", detail: "A dozen guests saw you nearly come to blows with Joseph." }],
         },
-      },
-      {
-        label: "Step politely away with the slightest brush of his shoulder",
-        next: "ch2_knock",
-        note: "Weak alibi",
-        effect: { flags: { failed_alibi_check: true } },
       },
     ],
   },
@@ -185,8 +191,8 @@ const SCENES: Record<string, Scene> = {
       line: "Sir, you misunderstand. The deceased is Mr. Jack Vernon Beale. Your adoptive father.",
     },
     choices: [
-      { label: "Stagger — then compose yourself and demand to assist", next: "ch2_interrogate" },
       { label: "Break down and refuse to answer questions", next: "dead_grief" },
+      { label: "Stagger — then compose yourself and demand to assist", next: "ch2_interrogate" },
     ],
   },
 
@@ -206,9 +212,17 @@ const SCENES: Record<string, Scene> = {
       line: "You're lying. You were obviously drunk — how do you remember all of this so clearly?",
     },
     choices: [
-      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_letters" },
       { label: "Panic and start revising your story", next: "dead_story" },
+      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_letters" },
+      { label: "Refuse to answer without your solicitor present", next: "dead_lawyer" },
     ],
+  },
+
+  dead_lawyer: {
+    title: "Lawyered",
+    text: "\"I'll say nothing further without my solicitor.\"\n\nIt is your right. It is also, to a man who has spent thirty years reading rooms, an answer.\n\nThe senior detective closes his notebook, almost kindly. From this morning on, every officer in the building treats the grieving son as the leading suspect — and a suspect cannot steer the investigation.",
+    fatal: true,
+    choices: [],
   },
 
   dead_story: {
