@@ -278,6 +278,12 @@ const SCENES: Record<string, Scene> = {
           ],
         },
       },
+      {
+        label: "Ask the constable to search her — you cannot bear to touch her",
+        next: "ch3_gun",
+        note: "Whatever she carried, it is theirs now",
+        effect: { flags: { found_hidden_letter: false } },
+      },
     ],
   },
 
@@ -286,8 +292,8 @@ const SCENES: Record<string, Scene> = {
     title: "The Wrong Caliber",
     text: "You weep beside her pale cheek until the officer gently lifts you up. An Adams revolver rests in her hand, one round missing from the cylinder.\n\nOne detail matters more than any other, and only you can afford to point it out.",
     choices: [
-      { label: "\"The temple wound doesn't match this caliber. She was murdered.\"", next: "ch4_forensic" },
       { label: "Say nothing about the gun", next: "dead_silence" },
+      { label: "\"The temple wound doesn't match this caliber. She was murdered.\"", next: "ch4_forensic" },
     ],
   },
 
@@ -307,9 +313,17 @@ const SCENES: Record<string, Scene> = {
       line: "A Webley is a staple among military men. Both my father and Leo are in the trade — both would own one.",
     },
     choices: [
-      { label: "Present the theory: Leo is the killer", next: "ch5_search" },
       { label: "Accuse the elderly butler instead", next: "dead_butler" },
+      { label: "Suggest a burglar came in through the garden door", next: "dead_burglar" },
+      { label: "Present the theory: Leo is the killer", next: "ch5_search" },
     ],
+  },
+
+  dead_burglar: {
+    title: "The Garden Door",
+    text: "A burglar, you say. In a house with forty servants, two hundred guests and nothing missing but two bullets.\n\nThe senior detective walks you to the garden door himself and shows you the untouched dust on the latch.\n\n\"Detectives don't guess,\" he says. \"They deflect. Which was that?\"",
+    fatal: true,
+    choices: [],
   },
 
   dead_butler: {
@@ -324,8 +338,8 @@ const SCENES: Record<string, Scene> = {
     title: "Something Too Convenient",
     text: "Leo is dragged in, protesting. The young officer promises the second Webley will seal his guilt, and the station empties into the search.\n\nOnly the senior detective stays behind, turning it over: Emma's identity, the two spent rounds, the letters. Everything fits a little too well. He looks across the lobby at you.",
     choices: [
-      { label: "Hold his gaze, calm as still water", next: "ch6_well" },
       { label: "Look away and hurry home", next: "dead_gaze" },
+      { label: "Hold his gaze, calm as still water", next: "ch6_well" },
     ],
   },
 
