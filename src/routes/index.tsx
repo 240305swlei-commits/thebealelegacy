@@ -9,6 +9,9 @@ import imgInterrogation from "@/assets/scene-interrogation.gif";
 import imgVilla from "@/assets/scene-villa.gif";
 import imgWell from "@/assets/scene-well.gif";
 import imgConfession from "@/assets/scene-confession.gif";
+import imgCorridor from "@/assets/scene-corridor.gif";
+import imgCourtroom from "@/assets/scene-courtroom.gif";
+import imgRain from "@/assets/scene-rain.gif";
 import { NoirScore, type TrackId } from "@/lib/score";
 
 const SCENE_TRACKS: Record<string, TrackId> = {
@@ -105,14 +108,22 @@ const SCENES: Record<string, Scene> = {
       items: [{ name: "Engraved Invitation", detail: "Signed by Jack Vernon Beale, 11 July 1943." }],
     },
     choices: [
+      { label: "Slip in quietly through the servants' door, unnoticed", next: "dead_alibi" },
+      { label: "Wait in the car until the toasts are over", next: "dead_late" },
       { label: "Let the butler note your arrival, loudly", next: "ch1_banquet" },
-      { label: "Slip in quietly, unnoticed", next: "dead_alibi" },
     ],
   },
 
   dead_alibi: {
     title: "A Quiet Entrance",
     text: "You slip past the cloakroom without a word. No one marks your arrival.\n\nThe next morning, when the police reconstruct the night, nobody can say when you came in — or where you stood when the shots were fired. To them, an unmarked guest is not a guest at all.\n\nHe is a suspect.",
+    fatal: true,
+    choices: [],
+  },
+
+  dead_late: {
+    title: "The Empty Hour",
+    text: "You sit in the dark of the car and let the toasts pass, watching the windows glow. It is almost peaceful.\n\nBut a plan built on minutes cannot afford an hour. By the time you enter, the gallery has closed, Emma has gone upstairs on Leo's arm, and Jack's door is locked.\n\nThe night you rehearsed for twenty-seven years happens without you.",
     fatal: true,
     choices: [],
   },
@@ -148,6 +159,18 @@ const SCENES: Record<string, Scene> = {
     },
     choices: [
       {
+        label: "Step politely away with the slightest brush of his shoulder",
+        next: "ch2_knock",
+        note: "Weak alibi",
+        effect: { flags: { failed_alibi_check: true } },
+      },
+      {
+        label: "Threaten him quietly, mouth close to his ear, so no one else hears",
+        next: "ch2_knock",
+        note: "Weak alibi — no witnesses",
+        effect: { flags: { failed_alibi_check: true } },
+      },
+      {
         label: "Deliberately insult him and shove him hard — make a scene the whole floor hears",
         next: "ch2_knock",
         note: "Perfect alibi locked",
@@ -155,12 +178,6 @@ const SCENES: Record<string, Scene> = {
           flags: { failed_alibi_check: false },
           items: [{ name: "Witnessed Quarrel", detail: "A dozen guests saw you nearly come to blows with Joseph." }],
         },
-      },
-      {
-        label: "Step politely away with the slightest brush of his shoulder",
-        next: "ch2_knock",
-        note: "Weak alibi",
-        effect: { flags: { failed_alibi_check: true } },
       },
     ],
   },
@@ -174,8 +191,8 @@ const SCENES: Record<string, Scene> = {
       line: "Sir, you misunderstand. The deceased is Mr. Jack Vernon Beale. Your adoptive father.",
     },
     choices: [
-      { label: "Stagger — then compose yourself and demand to assist", next: "ch2_interrogate" },
       { label: "Break down and refuse to answer questions", next: "dead_grief" },
+      { label: "Stagger — then compose yourself and demand to assist", next: "ch2_interrogate" },
     ],
   },
 
@@ -195,9 +212,17 @@ const SCENES: Record<string, Scene> = {
       line: "You're lying. You were obviously drunk — how do you remember all of this so clearly?",
     },
     choices: [
-      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_letters" },
       { label: "Panic and start revising your story", next: "dead_story" },
+      { label: "\"Officer, I am a detective. A good memory is essential.\"", next: "ch2_letters" },
+      { label: "Refuse to answer without your solicitor present", next: "dead_lawyer" },
     ],
+  },
+
+  dead_lawyer: {
+    title: "Lawyered",
+    text: "\"I'll say nothing further without my solicitor.\"\n\nIt is your right. It is also, to a man who has spent thirty years reading rooms, an answer.\n\nThe senior detective closes his notebook, almost kindly. From this morning on, every officer in the building treats the grieving son as the leading suspect — and a suspect cannot steer the investigation.",
+    fatal: true,
+    choices: [],
   },
 
   dead_story: {
@@ -253,6 +278,12 @@ const SCENES: Record<string, Scene> = {
           ],
         },
       },
+      {
+        label: "Ask the constable to search her — you cannot bear to touch her",
+        next: "ch3_gun",
+        note: "Whatever she carried, it is theirs now",
+        effect: { flags: { found_hidden_letter: false } },
+      },
     ],
   },
 
@@ -261,8 +292,8 @@ const SCENES: Record<string, Scene> = {
     title: "The Wrong Caliber",
     text: "You weep beside her pale cheek until the officer gently lifts you up. An Adams revolver rests in her hand, one round missing from the cylinder.\n\nOne detail matters more than any other, and only you can afford to point it out.",
     choices: [
-      { label: "\"The temple wound doesn't match this caliber. She was murdered.\"", next: "ch4_forensic" },
       { label: "Say nothing about the gun", next: "dead_silence" },
+      { label: "\"The temple wound doesn't match this caliber. She was murdered.\"", next: "ch4_forensic" },
     ],
   },
 
@@ -282,9 +313,17 @@ const SCENES: Record<string, Scene> = {
       line: "A Webley is a staple among military men. Both my father and Leo are in the trade — both would own one.",
     },
     choices: [
-      { label: "Present the theory: Leo is the killer", next: "ch5_search" },
       { label: "Accuse the elderly butler instead", next: "dead_butler" },
+      { label: "Suggest a burglar came in through the garden door", next: "dead_burglar" },
+      { label: "Present the theory: Leo is the killer", next: "ch5_search" },
     ],
+  },
+
+  dead_burglar: {
+    title: "The Garden Door",
+    text: "A burglar, you say. In a house with forty servants, two hundred guests and nothing missing but two bullets.\n\nThe senior detective walks you to the garden door himself and shows you the untouched dust on the latch.\n\n\"Detectives don't guess,\" he says. \"They deflect. Which was that?\"",
+    fatal: true,
+    choices: [],
   },
 
   dead_butler: {
@@ -299,8 +338,8 @@ const SCENES: Record<string, Scene> = {
     title: "Something Too Convenient",
     text: "Leo is dragged in, protesting. The young officer promises the second Webley will seal his guilt, and the station empties into the search.\n\nOnly the senior detective stays behind, turning it over: Emma's identity, the two spent rounds, the letters. Everything fits a little too well. He looks across the lobby at you.",
     choices: [
-      { label: "Hold his gaze, calm as still water", next: "ch6_well" },
       { label: "Look away and hurry home", next: "dead_gaze" },
+      { label: "Hold his gaze, calm as still water", next: "ch6_well" },
     ],
   },
 
@@ -366,26 +405,29 @@ const SCENE_IMAGES: Record<string, { src: string; alt: string }> = {
   prologue: { src: imgTrench, alt: "A soldier shields another in a trench as bombs fall" },
   ch1_arrive: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
   dead_alibi: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  dead_late: { src: imgRain, alt: "A rainy London street at night outside the manor" },
   ch1_banquet: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
   ch1_gallery: { src: imgGallery, alt: "Guests gaze at a portrait in a dark gallery" },
-  ch1_bathroom: { src: imgGallery, alt: "A dim corridor outside the gallery" },
+  ch1_bathroom: { src: imgCorridor, alt: "Two men in tuxedos quarrel in a mirrored washroom corridor" },
   ch2_knock: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   dead_grief: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   ch2_interrogate: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   dead_story: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  dead_lawyer: { src: imgInterrogation, alt: "An interrogation room lit by a single lamp" },
   ch2_letters: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
   ch3_villa: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   ch3_gun: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   dead_silence: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
   ch4_forensic: { src: imgVilla, alt: "A photograph and revolver on dark floorboards" },
-  dead_butler: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
+  dead_butler: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
+  dead_burglar: { src: imgVilla, alt: "A dark villa doorway" },
   ch5_search: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
-  dead_gaze: { src: imgInterrogation, alt: "A young man questioned by two detectives under a lamp" },
-  ch6_well: { src: imgWell, alt: "Police dredge a revolver from a well at night" },
+  dead_gaze: { src: imgRain, alt: "A man hurrying away down a rainy London street" },
+  ch6_well: { src: imgCourtroom, alt: "A defendant dragged from the dock in an Old Bailey courtroom" },
   ch7_truth: { src: imgConfession, alt: "A detective whispers to a man beneath a streetlamp" },
-  ending_mastermind: { src: imgConfession, alt: "A man in a fedora walking into the London rain" },
+  ending_mastermind: { src: imgRain, alt: "A man in a fedora walking into the London rain" },
   ending_tragic: { src: imgVilla, alt: "A revolver and a bloodstained letter on a desk" },
-  ending_above_law: { src: imgInterrogation, alt: "An interrogation room lit by a single lamp" },
+  ending_above_law: { src: imgCourtroom, alt: "A courtroom in shadow" },
 };
 
 /* ------------------------------------------------------------------ */
