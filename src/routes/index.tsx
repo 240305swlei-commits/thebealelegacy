@@ -9,6 +9,9 @@ import imgInterrogation from "@/assets/scene-interrogation.gif";
 import imgVilla from "@/assets/scene-villa.gif";
 import imgWell from "@/assets/scene-well.gif";
 import imgConfession from "@/assets/scene-confession.gif";
+import imgCorridor from "@/assets/scene-corridor.gif";
+import imgCourtroom from "@/assets/scene-courtroom.gif";
+import imgRain from "@/assets/scene-rain.gif";
 import { NoirScore, type TrackId } from "@/lib/score";
 
 const SCENE_TRACKS: Record<string, TrackId> = {
@@ -105,14 +108,22 @@ const SCENES: Record<string, Scene> = {
       items: [{ name: "Engraved Invitation", detail: "Signed by Jack Vernon Beale, 11 July 1943." }],
     },
     choices: [
+      { label: "Slip in quietly through the servants' door, unnoticed", next: "dead_alibi" },
+      { label: "Wait in the car until the toasts are over", next: "dead_late" },
       { label: "Let the butler note your arrival, loudly", next: "ch1_banquet" },
-      { label: "Slip in quietly, unnoticed", next: "dead_alibi" },
     ],
   },
 
   dead_alibi: {
     title: "A Quiet Entrance",
     text: "You slip past the cloakroom without a word. No one marks your arrival.\n\nThe next morning, when the police reconstruct the night, nobody can say when you came in — or where you stood when the shots were fired. To them, an unmarked guest is not a guest at all.\n\nHe is a suspect.",
+    fatal: true,
+    choices: [],
+  },
+
+  dead_late: {
+    title: "The Empty Hour",
+    text: "You sit in the dark of the car and let the toasts pass, watching the windows glow. It is almost peaceful.\n\nBut a plan built on minutes cannot afford an hour. By the time you enter, the gallery has closed, Emma has gone upstairs on Leo's arm, and Jack's door is locked.\n\nThe night you rehearsed for twenty-seven years happens without you.",
     fatal: true,
     choices: [],
   },
