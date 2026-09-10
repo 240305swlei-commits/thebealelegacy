@@ -101,9 +101,17 @@ export class NoirScore {
     if (!ctx) return;
     void ctx.resume();
     if (this.timer !== null) return;
+    // gentle fade-in so the score never starts abruptly
+    if (this.master && !this.muted) {
+      const now = ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(0.0001, now);
+      this.master.gain.linearRampToValueAtTime(1, now + 3);
+    }
     this.nextTime = ctx.currentTime + 0.1;
     this.timer = window.setInterval(() => this.schedule(), 60);
   }
+
 
   setTrack(id: TrackId) {
     if (id === this.track) return;
