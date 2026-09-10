@@ -512,16 +512,12 @@ function Index() {
   useEffect(() => {
     const score = new NoirScore();
     scoreRef.current = score;
-    const kick = () => score.start();
-    window.addEventListener("pointerdown", kick);
-    window.addEventListener("keydown", kick);
     return () => {
-      window.removeEventListener("pointerdown", kick);
-      window.removeEventListener("keydown", kick);
       score.stop();
       scoreRef.current = null;
     };
   }, []);
+
 
   useEffect(() => {
     scoreRef.current?.setTrack(SCENE_TRACKS[current.id] ?? "mystery");
