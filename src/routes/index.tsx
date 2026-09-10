@@ -487,6 +487,8 @@ function makeStart(): Snapshot {
 
 function Index() {
   const [started, setStarted] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [playerName, setPlayerName] = useState(DEFAULT_NAME);
   const [history, setHistory] = useState<Snapshot[]>(() => [makeStart()]);
   const [panel, setPanel] = useState<null | "inventory" | "timeline">(null);
   const [flashKey, setFlashKey] = useState(0);
@@ -494,10 +496,12 @@ function Index() {
   const current = history[history.length - 1]!;
   const scene = SCENES[current.id]!;
   const image = SCENE_IMAGES[current.id];
-  const { shown, done, skip } = useTypewriter(scene.text);
+  const named = useCallback((t: string) => t.split(DEFAULT_NAME).join(playerName), [playerName]);
+  const { shown, done, skip } = useTypewriter(named(scene.text));
   const paragraphs = useMemo(() => shown.split("\n\n"), [shown]);
   const endingNumber = ENDING_ORDER.indexOf(current.id as (typeof ENDING_ORDER)[number]) + 1;
   const topRef = useRef<HTMLDivElement>(null);
+
 
 
   useEffect(() => {
