@@ -870,7 +870,7 @@ function Index() {
                 className="animate-fade-in mt-8 border-l-2 border-noir-blood-bright bg-noir-bg-raised/70 px-5 py-4"
               >
                 <p className="text-[10px] uppercase tracking-[0.3em] text-noir-brass">
-                  {scene.dialogue.speaker}
+                  {named(scene.dialogue.speaker)}
                 </p>
                 <p className="mt-2 font-noir text-base italic leading-relaxed text-noir-ink">
                   “{named(scene.dialogue.line)}”
