@@ -8,3 +8,8 @@
 
 ## Open
 - [x] Convert story scene images into animated GIFs (user request)
+- [ ] Paragraph fade-in, ending breakdown + Play Again, audio fade-in gated behind Start Game
+- [ ] Start screen with name input (default "William") and use the name throughout the story text
+- [ ] Make top-right controls (sound, case file, pocket watch) more obvious with labels
+
+

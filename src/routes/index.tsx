@@ -401,6 +401,14 @@ function resolveEnding(flags: Flags): string {
   return "ending_mastermind";
 }
 
+/** Canonical ending order, used for the "Ending 1 of 3" breakdown. */
+const ENDING_ORDER = ["ending_mastermind", "ending_tragic", "ending_above_law"] as const;
+
+/** The detective's name in the written story; swapped for the player's name. */
+const DEFAULT_NAME = "William";
+
+
+
 const SCENE_IMAGES: Record<string, { src: string; alt: string }> = {
   prologue: { src: imgTrench, alt: "A soldier shields another in a trench as bombs fall" },
   ch1_arrive: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
@@ -482,6 +490,9 @@ function makeStart(): Snapshot {
 }
 
 function Index() {
+  const [started, setStarted] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [playerName, setPlayerName] = useState(DEFAULT_NAME);
   const [history, setHistory] = useState<Snapshot[]>(() => [makeStart()]);
   const [panel, setPanel] = useState<null | "inventory" | "timeline">(null);
   const [flashKey, setFlashKey] = useState(0);
@@ -489,8 +500,13 @@ function Index() {
   const current = history[history.length - 1]!;
   const scene = SCENES[current.id]!;
   const image = SCENE_IMAGES[current.id];
-  const { shown, done, skip } = useTypewriter(scene.text);
+  const named = useCallback((t: string) => t.split(DEFAULT_NAME).join(playerName), [playerName]);
+  const { shown, done, skip } = useTypewriter(named(scene.text));
+  const paragraphs = useMemo(() => shown.split("\n\n"), [shown]);
+  const endingNumber = ENDING_ORDER.indexOf(current.id as (typeof ENDING_ORDER)[number]) + 1;
   const topRef = useRef<HTMLDivElement>(null);
+
+
 
   useEffect(() => {
     topRef.current?.scrollIntoView({ block: "start" });
@@ -504,16 +520,12 @@ function Index() {
   useEffect(() => {
     const score = new NoirScore();
     scoreRef.current = score;
-    const kick = () => score.start();
-    window.addEventListener("pointerdown", kick);
-    window.addEventListener("keydown", kick);
     return () => {
-      window.removeEventListener("pointerdown", kick);
-      window.removeEventListener("keydown", kick);
       score.stop();
       scoreRef.current = null;
     };
   }, []);
+
 
   useEffect(() => {
     scoreRef.current?.setTrack(SCENE_TRACKS[current.id] ?? "mystery");
@@ -550,7 +562,76 @@ function Index() {
     [current.flags],
   );
 
+  const beginGame = () => {
+    const chosen = nameInput.trim() || DEFAULT_NAME;
+    setPlayerName(chosen);
+    setHistory([makeStart()]);
+    setStarted(true);
+    // audio may only begin after this user gesture; it fades in from silence
+    scoreRef.current?.start();
+  };
+
+  if (!started) {
+    return (
+      <main
+        className="vignette grain relative flex min-h-screen items-center justify-center bg-noir-bg px-6 font-typewriter text-noir-ink"
+        style={{ animation: "lamp-flicker 7s linear infinite" }}
+      >
+        <div className="smoke pointer-events-none fixed inset-0 z-0" />
+        <div className="animate-fade-in relative z-10 w-full max-w-md text-center">
+          <p className="text-[11px] uppercase tracking-[0.35em] text-noir-ink-dim">
+            An Interactive Noir Mystery
+          </p>
+          <h1 className="mt-3 font-noir text-3xl font-bold italic text-noir-brass sm:text-4xl">
+            The Somme Echoes
+          </h1>
+          <div className="mx-auto mt-4 h-px w-24 bg-noir-blood" />
+          <p className="mt-6 text-sm leading-relaxed text-noir-ink/85">
+            London, 1943. A banquet, two bodies, and a detective who already knows the killer.
+          </p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              beginGame();
+            }}
+            className="mt-10 text-left"
+          >
+            <label
+              htmlFor="player-name"
+              className="block text-[10px] uppercase tracking-[0.3em] text-noir-blood-bright"
+            >
+              What is your name?
+            </label>
+            <input
+              id="player-name"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="William"
+              maxLength={24}
+              autoComplete="off"
+              className="mt-3 w-full border border-noir-brass/40 bg-noir-bg-raised/70 px-4 py-3 text-base text-noir-ink placeholder:text-noir-ink-dim/70 focus:border-noir-blood-bright focus:outline-none"
+            />
+            <p className="mt-2 text-[11px] text-noir-ink-dim">
+              Leave it blank and you will answer to William.
+            </p>
+            <button
+              type="submit"
+              className="mt-7 w-full border border-noir-blood-bright bg-noir-blood/25 px-6 py-3 text-xs uppercase tracking-[0.3em] text-noir-blood-bright transition-colors hover:bg-noir-blood/40"
+            >
+              Start Game
+            </button>
+            <p className="mt-3 text-center text-[10px] uppercase tracking-[0.25em] text-noir-ink-dim/70">
+              Music fades in when the story begins
+            </p>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   return (
+
     <main
       className="vignette grain relative min-h-screen bg-noir-bg font-typewriter text-noir-ink"
       style={{ animation: "lamp-flicker 7s linear infinite" }}
@@ -564,7 +645,7 @@ function Index() {
       <div className="smoke pointer-events-none fixed inset-0 z-0" />
 
       {/* top-right controls */}
-      <div className="fixed right-3 top-3 z-40 flex items-center gap-2 sm:right-5 sm:top-5">
+      <div className="fixed right-3 top-3 z-40 flex items-center gap-2 rounded-full border border-noir-brass/50 bg-noir-bg-raised/90 px-2 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.7)] backdrop-blur sm:right-5 sm:top-5">
         <button
           onClick={() => {
             scoreRef.current?.start();
@@ -572,9 +653,13 @@ function Index() {
           }}
           aria-label={muted ? "Turn music on" : "Mute music"}
           title={muted ? "Music off — tap to play" : "Music on — tap to mute"}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            muted
+              ? "border-noir-brass/40 text-noir-ink-dim hover:text-noir-brass"
+              : "border-noir-blood-bright/70 bg-noir-blood/25 text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" />
             {muted ? (
               <path d="M16 9.5l5 5M21 9.5l-5 5" />
@@ -582,28 +667,42 @@ function Index() {
               <path d="M15.5 9.5a4.2 4.2 0 0 1 0 5M18.2 7.2a7.4 7.4 0 0 1 0 9.6" />
             )}
           </svg>
+          <span className="hidden sm:inline">{muted ? "Music off" : "Music on"}</span>
         </button>
         <button
           onClick={() => setPanel(panel === "inventory" ? null : "inventory")}
           aria-label="Open case file and inventory"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          title="Case file — evidence you are carrying"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            panel === "inventory"
+              ? "border-noir-blood-bright bg-noir-blood/25 text-noir-blood-bright"
+              : "border-noir-brass/50 text-noir-brass hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h5l1.5 2h8.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />
           </svg>
+          <span className="hidden sm:inline">Case file</span>
         </button>
         <button
           onClick={() => setPanel(panel === "timeline" ? null : "timeline")}
           aria-label="Open the pocket watch timeline"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          title="Pocket watch — rewind to an earlier moment"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            panel === "timeline"
+              ? "border-noir-blood-bright bg-noir-blood/25 text-noir-blood-bright"
+              : "border-noir-brass/50 text-noir-brass hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M12 3.5v-1.2M10 2.3h4" />
             <circle cx="12" cy="13" r="7.5" />
             <path d="M12 9.5V13l2.5 1.8" />
           </svg>
+          <span className="hidden sm:inline">Rewind</span>
         </button>
       </div>
+
 
       {/* slide-out panel */}
       <>
@@ -749,13 +848,21 @@ function Index() {
 
             <div
               onClick={skip}
-              className={`cursor-pointer whitespace-pre-line text-[15px] leading-relaxed text-noir-ink/90 sm:text-base ${
-                done ? "" : "caret"
-              }`}
+              className="cursor-pointer text-[15px] leading-relaxed text-noir-ink/90 sm:text-base"
               aria-live="polite"
             >
-              {shown}
+              {paragraphs.map((p, i) => (
+                <p
+                  key={i}
+                  className={`animate-fade-in whitespace-pre-line ${i > 0 ? "mt-5" : ""} ${
+                    !done && i === paragraphs.length - 1 ? "caret" : ""
+                  }`}
+                >
+                  {p}
+                </p>
+              ))}
             </div>
+
 
             {/* dialogue plate */}
             {scene.dialogue && done && (
@@ -763,10 +870,10 @@ function Index() {
                 className="animate-fade-in mt-8 border-l-2 border-noir-blood-bright bg-noir-bg-raised/70 px-5 py-4"
               >
                 <p className="text-[10px] uppercase tracking-[0.3em] text-noir-brass">
-                  {scene.dialogue.speaker}
+                  {named(scene.dialogue.speaker)}
                 </p>
                 <p className="mt-2 font-noir text-base italic leading-relaxed text-noir-ink">
-                  “{scene.dialogue.line}”
+                  “{named(scene.dialogue.line)}”
                 </p>
               </div>
             )}
@@ -820,28 +927,40 @@ function Index() {
 
               {done && scene.ending && (
                 <div className="border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-6 text-center">
-                  <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-noir-blood-bright">
+                    Ending {endingNumber} of {ENDING_ORDER.length} — {scene.title}
+                  </p>
+                  <p className="mt-3 font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
                     Case Closed
                   </p>
-                  <p className="mt-2 text-xs text-noir-ink-dim">
-                    Three endings wait behind two decisions: the washroom, and your sister's pocket.
+                  <ul className="mx-auto mt-4 max-w-sm space-y-1 text-left text-xs text-noir-ink-dim">
+                    {ENDING_ORDER.map((id, i) => (
+                      <li key={id} className={id === current.id ? "text-noir-blood-bright" : ""}>
+                        {i + 1}. {SCENES[id]!.title}
+                        {id === current.id ? " — yours tonight" : ""}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs text-noir-ink-dim">
+                    Two decisions divide them: the washroom, and your sister's pocket.
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <button
+                      onClick={restart}
+                      className="border border-noir-blood-bright bg-noir-blood/25 px-6 py-2 text-xs uppercase tracking-[0.25em] text-noir-blood-bright transition-colors hover:bg-noir-blood/40"
+                    >
+                      Play again
+                    </button>
                     <button
                       onClick={() => setPanel("timeline")}
                       className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
                     >
                       Rewind and choose differently
                     </button>
-                    <button
-                      onClick={restart}
-                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
-                    >
-                      Begin again — 1916
-                    </button>
                   </div>
                 </div>
               )}
+
             </div>
         </section>
 
