@@ -824,28 +824,40 @@ function Index() {
 
               {done && scene.ending && (
                 <div className="border border-noir-brass/40 bg-noir-bg-raised/60 px-5 py-6 text-center">
-                  <p className="font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-noir-blood-bright">
+                    Ending {endingNumber} of {ENDING_ORDER.length} — {scene.title}
+                  </p>
+                  <p className="mt-3 font-noir text-lg font-bold uppercase tracking-[0.25em] text-noir-brass">
                     Case Closed
                   </p>
-                  <p className="mt-2 text-xs text-noir-ink-dim">
-                    Three endings wait behind two decisions: the washroom, and your sister's pocket.
+                  <ul className="mx-auto mt-4 max-w-sm space-y-1 text-left text-xs text-noir-ink-dim">
+                    {ENDING_ORDER.map((id, i) => (
+                      <li key={id} className={id === current.id ? "text-noir-blood-bright" : ""}>
+                        {i + 1}. {SCENES[id]!.title}
+                        {id === current.id ? " — yours tonight" : ""}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs text-noir-ink-dim">
+                    Two decisions divide them: the washroom, and your sister's pocket.
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <button
+                      onClick={restart}
+                      className="border border-noir-blood-bright bg-noir-blood/25 px-6 py-2 text-xs uppercase tracking-[0.25em] text-noir-blood-bright transition-colors hover:bg-noir-blood/40"
+                    >
+                      Play again
+                    </button>
                     <button
                       onClick={() => setPanel("timeline")}
                       className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
                     >
                       Rewind and choose differently
                     </button>
-                    <button
-                      onClick={restart}
-                      className="border border-noir-brass/50 px-5 py-2 text-xs uppercase tracking-[0.25em] text-noir-brass transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
-                    >
-                      Begin again — 1916
-                    </button>
                   </div>
                 </div>
               )}
+
             </div>
         </section>
 
