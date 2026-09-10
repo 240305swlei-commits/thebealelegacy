@@ -753,13 +753,21 @@ function Index() {
 
             <div
               onClick={skip}
-              className={`cursor-pointer whitespace-pre-line text-[15px] leading-relaxed text-noir-ink/90 sm:text-base ${
-                done ? "" : "caret"
-              }`}
+              className="cursor-pointer text-[15px] leading-relaxed text-noir-ink/90 sm:text-base"
               aria-live="polite"
             >
-              {shown}
+              {paragraphs.map((p, i) => (
+                <p
+                  key={i}
+                  className={`animate-fade-in whitespace-pre-line ${i > 0 ? "mt-5" : ""} ${
+                    !done && i === paragraphs.length - 1 ? "caret" : ""
+                  }`}
+                >
+                  {p}
+                </p>
+              ))}
             </div>
+
 
             {/* dialogue plate */}
             {scene.dialogue && done && (
