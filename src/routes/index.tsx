@@ -401,6 +401,10 @@ function resolveEnding(flags: Flags): string {
   return "ending_mastermind";
 }
 
+/** Canonical ending order, used for the "Ending 1 of 3" breakdown. */
+const ENDING_ORDER = ["ending_mastermind", "ending_tragic", "ending_above_law"] as const;
+
+
 const SCENE_IMAGES: Record<string, { src: string; alt: string }> = {
   prologue: { src: imgTrench, alt: "A soldier shields another in a trench as bombs fall" },
   ch1_arrive: { src: imgBanquet, alt: "A candlelit banquet hall full of guests" },
