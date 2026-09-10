@@ -873,7 +873,7 @@ function Index() {
                   {scene.dialogue.speaker}
                 </p>
                 <p className="mt-2 font-noir text-base italic leading-relaxed text-noir-ink">
-                  “{scene.dialogue.line}”
+                  “{named(scene.dialogue.line)}”
                 </p>
               </div>
             )}
