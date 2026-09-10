@@ -562,7 +562,76 @@ function Index() {
     [current.flags],
   );
 
+  const beginGame = () => {
+    const chosen = nameInput.trim() || DEFAULT_NAME;
+    setPlayerName(chosen);
+    setHistory([makeStart()]);
+    setStarted(true);
+    // audio may only begin after this user gesture; it fades in from silence
+    scoreRef.current?.start();
+  };
+
+  if (!started) {
+    return (
+      <main
+        className="vignette grain relative flex min-h-screen items-center justify-center bg-noir-bg px-6 font-typewriter text-noir-ink"
+        style={{ animation: "lamp-flicker 7s linear infinite" }}
+      >
+        <div className="smoke pointer-events-none fixed inset-0 z-0" />
+        <div className="animate-fade-in relative z-10 w-full max-w-md text-center">
+          <p className="text-[11px] uppercase tracking-[0.35em] text-noir-ink-dim">
+            An Interactive Noir Mystery
+          </p>
+          <h1 className="mt-3 font-noir text-3xl font-bold italic text-noir-brass sm:text-4xl">
+            The Somme Echoes
+          </h1>
+          <div className="mx-auto mt-4 h-px w-24 bg-noir-blood" />
+          <p className="mt-6 text-sm leading-relaxed text-noir-ink/85">
+            London, 1943. A banquet, two bodies, and a detective who already knows the killer.
+          </p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              beginGame();
+            }}
+            className="mt-10 text-left"
+          >
+            <label
+              htmlFor="player-name"
+              className="block text-[10px] uppercase tracking-[0.3em] text-noir-blood-bright"
+            >
+              What is your name?
+            </label>
+            <input
+              id="player-name"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="William"
+              maxLength={24}
+              autoComplete="off"
+              className="mt-3 w-full border border-noir-brass/40 bg-noir-bg-raised/70 px-4 py-3 text-base text-noir-ink placeholder:text-noir-ink-dim/70 focus:border-noir-blood-bright focus:outline-none"
+            />
+            <p className="mt-2 text-[11px] text-noir-ink-dim">
+              Leave it blank and you will answer to William.
+            </p>
+            <button
+              type="submit"
+              className="mt-7 w-full border border-noir-blood-bright bg-noir-blood/25 px-6 py-3 text-xs uppercase tracking-[0.3em] text-noir-blood-bright transition-colors hover:bg-noir-blood/40"
+            >
+              Start Game
+            </button>
+            <p className="mt-3 text-center text-[10px] uppercase tracking-[0.25em] text-noir-ink-dim/70">
+              Music fades in when the story begins
+            </p>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   return (
+
     <main
       className="vignette grain relative min-h-screen bg-noir-bg font-typewriter text-noir-ink"
       style={{ animation: "lamp-flicker 7s linear infinite" }}
