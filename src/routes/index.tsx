@@ -576,7 +576,7 @@ function Index() {
       <div className="smoke pointer-events-none fixed inset-0 z-0" />
 
       {/* top-right controls */}
-      <div className="fixed right-3 top-3 z-40 flex items-center gap-2 sm:right-5 sm:top-5">
+      <div className="fixed right-3 top-3 z-40 flex items-center gap-2 rounded-full border border-noir-brass/50 bg-noir-bg-raised/90 px-2 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.7)] backdrop-blur sm:right-5 sm:top-5">
         <button
           onClick={() => {
             scoreRef.current?.start();
@@ -584,9 +584,13 @@ function Index() {
           }}
           aria-label={muted ? "Turn music on" : "Mute music"}
           title={muted ? "Music off — tap to play" : "Music on — tap to mute"}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            muted
+              ? "border-noir-brass/40 text-noir-ink-dim hover:text-noir-brass"
+              : "border-noir-blood-bright/70 bg-noir-blood/25 text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" />
             {muted ? (
               <path d="M16 9.5l5 5M21 9.5l-5 5" />
@@ -594,28 +598,42 @@ function Index() {
               <path d="M15.5 9.5a4.2 4.2 0 0 1 0 5M18.2 7.2a7.4 7.4 0 0 1 0 9.6" />
             )}
           </svg>
+          <span className="hidden sm:inline">{muted ? "Music off" : "Music on"}</span>
         </button>
         <button
           onClick={() => setPanel(panel === "inventory" ? null : "inventory")}
           aria-label="Open case file and inventory"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          title="Case file — evidence you are carrying"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            panel === "inventory"
+              ? "border-noir-blood-bright bg-noir-blood/25 text-noir-blood-bright"
+              : "border-noir-brass/50 text-noir-brass hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h5l1.5 2h8.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />
           </svg>
+          <span className="hidden sm:inline">Case file</span>
         </button>
         <button
           onClick={() => setPanel(panel === "timeline" ? null : "timeline")}
           aria-label="Open the pocket watch timeline"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-noir-brass/40 bg-noir-bg-raised/80 text-noir-brass backdrop-blur transition-colors hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          title="Pocket watch — rewind to an earlier moment"
+          className={`flex h-10 items-center gap-2 rounded-full border px-3 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+            panel === "timeline"
+              ? "border-noir-blood-bright bg-noir-blood/25 text-noir-blood-bright"
+              : "border-noir-brass/50 text-noir-brass hover:border-noir-blood-bright hover:text-noir-blood-bright"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M12 3.5v-1.2M10 2.3h4" />
             <circle cx="12" cy="13" r="7.5" />
             <path d="M12 9.5V13l2.5 1.8" />
           </svg>
+          <span className="hidden sm:inline">Rewind</span>
         </button>
       </div>
+
 
       {/* slide-out panel */}
       <>
